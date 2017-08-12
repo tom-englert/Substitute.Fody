@@ -124,8 +124,10 @@ If class A is derived from class B, either
 - substitute class B also with class X and implement all needed methods in X
 - derive X from Y and substitute B with Y
 
-
-
+```
+    A : B =substitute=> X : B     A : B =substitute=> X     A : B =substitute=> X : Y
+                                  B     =substitute=> X     B     =substitute=> Y
+```
 
 
 
