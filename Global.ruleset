@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Solution Global" Description="Shared code analysis rules for JetBrainsAnnotations.Fody.sln." ToolsVersion="15.0">
+  <Include Path="allrules.ruleset" Action="Default" />
+  <Rules AnalyzerId="ContracsReSharperInterop" RuleNamespace="ContracsReSharperInterop">
+    <Rule Id="CCRSI_ConditionalForContractInvariant" Action="None" />
+    <Rule Id="CCRSI_ContractForNotNull" Action="None" />
+    <Rule Id="CCRSI_CreateContractClass" Action="None" />
+    <Rule Id="CCRSI_CreateContractInvariantMethod" Action="None" />
+    <Rule Id="CCRSI_NotNullForContract" Action="None" />
+  </Rules>
+  <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
+    <Rule Id="CA1020" Action="Warning" />
+    <Rule Id="CA1300" Action="None" />
+    <Rule Id="CA1301" Action="None" />
+    <Rule Id="CA1302" Action="None" />
+    <Rule Id="CA1303" Action="None" />
+    <Rule Id="CA1304" Action="None" />
+    <Rule Id="CA1305" Action="None" />
+    <Rule Id="CA1306" Action="None" />
+    <Rule Id="CA1307" Action="None" />
+    <Rule Id="CA1308" Action="None" />
+    <Rule Id="CA1309" Action="None" />
+    <Rule Id="CA1506" Action="None" />
+    <Rule Id="CA1824" Action="None" />
+    <Rule Id="CA2101" Action="None" />
+    <Rule Id="CA2210" Action="None" />
+  </Rules>
+</RuleSet>

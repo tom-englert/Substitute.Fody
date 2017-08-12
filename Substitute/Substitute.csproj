@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>Substitute.snk</AssemblyOriginatorKeyFile>
+    <CodeAnalysisRuleSet>..\Global.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>$(OutputPath)Substitute.XML</DocumentationFile>
+    <Tags>Netstandard</Tags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Trademark.cs" Link="Trademark.cs" />
+    <Compile Include="..\Version.cs" Link="Version.cs" />
+  </ItemGroup>
+
+</Project>
