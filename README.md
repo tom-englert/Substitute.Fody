@@ -114,11 +114,11 @@ private void InitializeComponent()
 
 If you want to substitute a class A with a class X
 
-- class X must implement all methods and properties of class A that are used in the assembly, with the same name, parameters and return type.
-- class X does not need to implement methods or properties of class A that are not used in this assembly.
+- class X must implement all members of class A that are accessed by code in the assembly, with the same name, parameters and return type.
+- class X does not need to implement members of class A that are not accessed by code in this assembly.
 - you must not use any class derived from A unless you substitute it, too.
 
-If class A is derived from class B, either
+If class A is derived from class B, and members of B are accessed by code in this assembly, either
 
 - derive class X also from B
 - substitute class B also with class X and implement all needed methods in X
@@ -129,7 +129,7 @@ If class A is derived from class B, either
                                   B     =substitute=> X     B     =substitute=> Y
 ```
 
-
+If you are not sure about which methods to implement, start with an empty class and fix all errors successively.
 
 
 
