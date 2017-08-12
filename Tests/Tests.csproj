@@ -11,7 +11,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <WarningLevel>4</WarningLevel>
-    <OutputPath>bin\$(Configuration)\$(TargetFrameworkVersion)\$(TargetFrameworkProfile)\</OutputPath>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
     <CodeAnalysisRuleSet>..\Global.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>

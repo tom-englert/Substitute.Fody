@@ -13,7 +13,7 @@
     <CodeAnalysisRuleSet>..\Global.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <WarningLevel>4</WarningLevel>
-    <OutputPath>bin\$(Configuration)\$(TargetFrameworkVersion)\$(TargetFrameworkProfile)\</OutputPath>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

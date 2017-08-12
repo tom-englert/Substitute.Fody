@@ -7,7 +7,7 @@
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Substitute.snk</AssemblyOriginatorKeyFile>
     <CodeAnalysisRuleSet>..\Global.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>$(OutputPath)Substitute.XML</DocumentationFile>
+    <DocumentationFile>$(OutDir)Substitute.XML</DocumentationFile>
     <Tags>Netstandard</Tags>
   </PropertyGroup>
 
