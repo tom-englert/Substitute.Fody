@@ -16,7 +16,7 @@ public class FodyTests
     {
         var form = assembly.GetInstance("AssemblyToProcess.TestForm");
 
-        Assert.AreEqual("$this.Text=>MyResourceManager", form.Value);
         Assert.AreEqual("Form:MyResourceManager", form.Text);
+        Assert.AreEqual("$this.Text=>MyResourceManager", form.Value);
     }
 }

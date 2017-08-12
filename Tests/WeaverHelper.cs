@@ -64,6 +64,8 @@ namespace Tests
                     ModuleDefinition = moduleDefinition
                 };
 
+                weavingTask.LogError = Assert.Fail;
+                weavingTask.LogErrorPoint = (s, point) => Assert.Fail(s);
                 weavingTask.Execute();
 
                 var assemblyNameDefinition = moduleDefinition.Assembly?.Name;

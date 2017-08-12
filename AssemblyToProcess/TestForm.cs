@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 using JetBrains.Annotations;
 
@@ -13,7 +12,7 @@ namespace AssemblyToProcess
         public string Value { get; }
 
         [NotNull]
-        public ComponentResourceManager Resources { get; } = new ComponentResourceManager(typeof(TestForm));
+        public System.ComponentModel.ComponentResourceManager Resources { get; } = new System.ComponentModel.ComponentResourceManager(typeof(TestForm));
 
         public TestForm()
         {

@@ -25,14 +25,20 @@ namespace Substitute
 
         private class Weaver
         {
-            [NotNull] private readonly ModuleDefinition _moduleDefinition;
-            [NotNull] private readonly HashSet<TypeReference> _validatedTypes = new HashSet<TypeReference>(TypeReferenceEqualityComparer.Default);
-            [NotNull] private readonly IDictionary<TypeReference, TypeDefinition> _substitutionMap;
+            [NotNull]
+            private readonly ModuleDefinition _moduleDefinition;
+            [NotNull]
+            private readonly HashSet<TypeReference> _validatedTypes = new HashSet<TypeReference>(TypeReferenceEqualityComparer.Default);
+            [NotNull]
+            private readonly IDictionary<TypeReference, TypeDefinition> _substitutionMap;
+            [NotNull]
+            private readonly HashSet<TypeReference> _substitutes;
 
             public Weaver([NotNull] ModuleDefinition moduleDefinition)
             {
                 _moduleDefinition = moduleDefinition;
                 _substitutionMap = moduleDefinition.CreateSubstitutionMap().Validate();
+                _substitutes = new HashSet<TypeReference>(_substitutionMap.Values, TypeReferenceEqualityComparer.Default);
             }
 
             internal void Weave()
@@ -40,6 +46,10 @@ namespace Substitute
                 // ReSharper disable once PossibleNullReferenceException
                 foreach (var type in _moduleDefinition.GetTypes())
                 {
+                    // avoid recursions...
+                    if (_substitutes.Contains(type))
+                        continue;
+
                     foreach (var genericParameter in type.GenericParameters)
                     {
                         genericParameter.Constraints.ReplaceItems(GetSubstitute);

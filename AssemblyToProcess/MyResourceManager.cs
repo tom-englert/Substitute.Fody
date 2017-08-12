@@ -14,21 +14,27 @@ using Substitute;
 
 namespace AssemblyToProcess
 {
-    public class MyResourceManager
+    public class MyResourceManager : System.Resources.ResourceManager
     {
+        private System.ComponentModel.ComponentResourceManager _resources;
+
         public MyResourceManager(Type component)
+            : base(component)
         {
+            _resources = new System.ComponentModel.ComponentResourceManager(component);
         }
 
-        public void ApplyResources(object a, string b)
+        public void ApplyResources(object value, string objectName)
         {
-            if (a is Form form)
+            _resources.ApplyResources(value, objectName);
+
+            if (value is Form form)
             {
                 form.Text = @"Form:MyResourceManager";
             }
         }
 
-        public string GetString(string key)
+        public new string GetString(string key)
         {
             return $@"{key}=>MyResourceManager";
         }

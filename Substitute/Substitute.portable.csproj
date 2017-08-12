@@ -19,7 +19,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
     <ErrorReport>prompt</ErrorReport>
-    <DocumentationFile>$(OutDir)Substitute.XML</DocumentationFile>
+    <DocumentationFile>$(OutputPath)$(AssemblyName).XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

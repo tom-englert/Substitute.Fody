@@ -134,9 +134,6 @@ namespace Substitute
                     .Select((reference, index) => new {reference, index})
                     .ToDictionary(item => item.reference, item => item.index, TypeReferenceEqualityComparer.Default);
 
-                if (targetAndBases.ContainsKey(source))
-                    throw new WeavingException($"{source} => {target} substitution error. {source} cannot be substituted by itself.", target);
-
                 var lastTargetIndex = 0;
 
                 var sourceBase = source;
@@ -157,7 +154,11 @@ namespace Substitute
                         continue;
                     }
 
-                    throw new WeavingException($"{source} => {target} substitution error. There is no counterpart for {sourceBase} in the targets base classes", target);
+                    throw new WeavingException(
+$@"{source} => {target} substitution error. {source} derives from {sourceBase}, but there is no direct or substituted counterpart for {sourceBase} in the targets base classes.
+Either derive {target} from {sourceBase}, or substitute {sourceBase} with {target} or one of it's base classes."
+                        
+                        , target);
                 }
             }
 
