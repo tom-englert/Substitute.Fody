@@ -65,12 +65,12 @@ namespace Substitute
 
             if (newItem == null)
             {
-                throw new WeavingException("The type {type} does not contain a method {signature}", type);
+                throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because it does not contain a method {signature}.", type);
             }
 
             if (newItem.IsPrivate)
             {
-                throw new WeavingException($"The method {signature} on type {type} must not be private to substitute {template}", type);
+                throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because the method {signature} is private.", type);
             }
 
             return newItem;
@@ -85,12 +85,12 @@ namespace Substitute
 
             if (newItem == null)
             {
-                throw new WeavingException($"The type {type} does not contain a field {signature}", type);
+                throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because it does not contain a field {signature}.", type);
             }
 
             if (newItem.IsPrivate)
             {
-                throw new WeavingException($"The field {signature} on type {type} must not be private to substitute {template}", type);
+                throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because the field {signature} is private.", type);
             }
 
             return newItem;
