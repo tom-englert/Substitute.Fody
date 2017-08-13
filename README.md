@@ -119,13 +119,14 @@ If you want to substitute a class A with a class X
 - class X does not need to implement members of class A that are not accessed by code in this assembly.
 - you must not use any class derived from A unless you substitute it, too.
 
-If class A is derived from class B, and members of B are accessed by code in this assembly, either
+If class A is derived from class B, either 
 
-- derive class X also from B
-- substitute class B also with class X and implement all needed methods in X
-- derive X from Y and substitute B with Y
+a) derive class X also from B
+b) substitute class B also with class X and implement all needed methods in X
+c) derive X from Y and substitute B with Y
 
 ```
+    a)                            b)                        c)
     A : B =substitute=> X : B     A : B =substitute=> X     A : B =substitute=> X : Y
                                   B     =substitute=> X     B     =substitute=> Y
 ```
