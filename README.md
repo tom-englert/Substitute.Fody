@@ -46,6 +46,7 @@ for user overrides in the text file before returning control to the original imp
 
 ```csharp
 [assembly: Substitute(typeof(System.ComponentModel.ComponentResourceManager), typeof(MyResourceManager))]
+[assembly: Substitute(typeof(System.Resources.ResourceManager), typeof(MyResourceManager))]
 
 public class MyResourceManager
 {
