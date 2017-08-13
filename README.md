@@ -121,12 +121,12 @@ If you want to substitute a class A with a class X
 
 If class A is derived from class B, either 
 
-a) derive class X also from B
-b) substitute class B also with class X and implement all needed methods in X
-c) derive X from Y and substitute B with Y
+1. derive class X also from B
+2. substitute class B also with class X and implement all needed methods in X
+3. derive X from Y and substitute B with Y
 
 ```
-    a)                            b)                        c)
+    1.                            2.                        3.
     A : B =substitute=> X : B     A : B =substitute=> X     A : B =substitute=> X : Y
                                   B     =substitute=> X     B     =substitute=> Y
 ```
