@@ -100,14 +100,14 @@ namespace Substitute
                             {
                                 if (TryGetSubstitute(operandMethod.DeclaringType, out var substitute))
                                 {
-                                    instructions[i] = Instruction.Create(inst.OpCode, substitute.Find(operandMethod.Resolve()));
+                                    instructions[i] = Instruction.Create(inst.OpCode, substitute.Find(operandMethod.Resolve(), _moduleDefinition));
                                 }
                             }
                             else if (inst.Operand is FieldReference operandField)
                             {
                                 if (TryGetSubstitute(operandField.DeclaringType, out var substitute))
                                 {
-                                    instructions[i] = Instruction.Create(inst.OpCode, substitute.Find(operandField.Resolve()));
+                                    instructions[i] = Instruction.Create(inst.OpCode, substitute.Find(operandField.Resolve(), _moduleDefinition));
                                 }
                             }
                         }
@@ -120,7 +120,7 @@ namespace Substitute
             {
                 if (_substitutionMap.TryGetValue(type, out var substitute))
                 {
-                    return substitute;
+                    return _moduleDefinition.ImportReference(substitute);
                 }
 
                 if (_validatedTypes.Contains(type))

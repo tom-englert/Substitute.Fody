@@ -22,7 +22,7 @@ namespace Substitute
                 .Where(attr => attr.ConstructorArguments.All(ca => ca.Type.FullName == "System.Type"))
                 .ToDictionary(
                     attr => (TypeReference)attr.ConstructorArguments[0].Value,
-                    attr => moduleDefinition.MetadataResolver.Resolve((TypeReference)attr.ConstructorArguments[1].Value),
+                    attr => moduleDefinition.ImportReference((TypeReference)attr.ConstructorArguments[1].Value).Resolve(),
                     TypeReferenceEqualityComparer.Default);
 
 
@@ -55,9 +55,8 @@ namespace Substitute
             }
         }
 
-
         [NotNull]
-        public static MethodReference Find([NotNull] this TypeDefinition type, [NotNull] MethodDefinition template)
+        public static MethodReference Find([NotNull] this TypeDefinition type, [NotNull] MethodDefinition template, [NotNull] ModuleDefinition targetModule)
         {
             var signature = template.GetSignature(type);
 
@@ -73,11 +72,11 @@ namespace Substitute
                 throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because the method {signature} is private.", type);
             }
 
-            return newItem;
+            return targetModule.ImportReference(newItem);
         }
 
         [NotNull]
-        public static FieldReference Find([NotNull] this TypeDefinition type, [NotNull] FieldDefinition template)
+        public static FieldReference Find([NotNull] this TypeDefinition type, [NotNull] FieldDefinition template, [NotNull] ModuleDefinition targetModule)
         {
             var signature = template.GetSignature(type);
 
@@ -93,7 +92,7 @@ namespace Substitute
                 throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because the field {signature} is private.", type);
             }
 
-            return newItem;
+            return targetModule.ImportReference(newItem);
         }
 
         [CanBeNull]
