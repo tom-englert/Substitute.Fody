@@ -74,12 +74,17 @@ namespace Substitute
 
                         method.ReturnType = GetSubstitute(method.ReturnType);
 
-                        foreach (var variable in method.Body.Variables)
+                        var methodBody = method.Body;
+
+                        if (methodBody == null)
+                            continue;
+
+                        foreach (var variable in methodBody.Variables)
                         {
                             variable.VariableType = GetSubstitute(variable.VariableType);
                         }
 
-                        var instructions = method.Body.Instructions;
+                        var instructions = methodBody.Instructions;
 
                         for (var i = 0; i < instructions.Count; i++)
                         {
