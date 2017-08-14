@@ -27,11 +27,11 @@ namespace Substitute
         {
             [NotNull]
             private readonly ModuleDefinition _moduleDefinition;
-            [NotNull]
+            [NotNull, ItemNotNull]
             private readonly HashSet<TypeReference> _validatedTypes = new HashSet<TypeReference>(TypeReferenceEqualityComparer.Default);
             [NotNull]
             private readonly IDictionary<TypeReference, TypeDefinition> _substitutionMap;
-            [NotNull]
+            [NotNull, ItemNotNull]
             private readonly HashSet<TypeReference> _substitutes;
 
             public Weaver([NotNull] ModuleDefinition moduleDefinition)
@@ -47,7 +47,7 @@ namespace Substitute
                 foreach (var type in _moduleDefinition.GetTypes())
                 {
                     // avoid recursions...
-                    if (_substitutes.Contains(type))
+                    if (_substitutionMap.ContainsKey(type) || _substitutes.Contains(type))
                         continue;
 
                     foreach (var genericParameter in type.GenericParameters)
