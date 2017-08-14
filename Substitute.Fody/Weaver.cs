@@ -100,14 +100,14 @@ namespace Substitute
                             {
                                 if (TryGetSubstitute(operandMethod.DeclaringType, out var substitute))
                                 {
-                                    instructions[i] = Instruction.Create(inst.OpCode, substitute.Find(operandMethod.Resolve(), _moduleDefinition));
+                                    instructions[i] = Instruction.Create(inst.OpCode, Find(substitute, operandMethod.Resolve()));
                                 }
                             }
                             else if (inst.Operand is FieldReference operandField)
                             {
                                 if (TryGetSubstitute(operandField.DeclaringType, out var substitute))
                                 {
-                                    instructions[i] = Instruction.Create(inst.OpCode, substitute.Find(operandField.Resolve(), _moduleDefinition));
+                                    instructions[i] = Instruction.Create(inst.OpCode, Find(substitute, operandField.Resolve()));
                                 }
                             }
                         }
@@ -116,7 +116,7 @@ namespace Substitute
             }
 
             [NotNull]
-            TypeReference GetSubstitute([NotNull] TypeReference type)
+            private TypeReference GetSubstitute([NotNull] TypeReference type)
             {
                 if (_substitutionMap.TryGetValue(type, out var substitute))
                 {
@@ -147,6 +147,46 @@ namespace Substitute
                 }
 
                 return substitute != null;
+            }
+
+            [NotNull]
+            public MethodReference Find([NotNull] TypeDefinition type, [NotNull] MethodDefinition template)
+            {
+                var signature = template.GetSignature(type);
+
+                var newItem = type.Methods?.FirstOrDefault(m => m.GetSignature() == signature);
+
+                if (newItem == null)
+                {
+                    throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because it does not contain a method {signature}.", type);
+                }
+
+                if (newItem.IsPrivate)
+                {
+                    throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because the method {signature} is private.", type);
+                }
+
+                return _moduleDefinition.ImportReference(newItem);
+            }
+
+            [NotNull]
+            public FieldReference Find([NotNull] TypeDefinition type, [NotNull] FieldDefinition template)
+            {
+                var signature = template.GetSignature(type);
+
+                var newItem = type.Fields?.FirstOrDefault(m => m.GetSignature() == signature);
+
+                if (newItem == null)
+                {
+                    throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because it does not contain a field {signature}.", type);
+                }
+
+                if (newItem.IsPrivate)
+                {
+                    throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because the field {signature} is private.", type);
+                }
+
+                return _moduleDefinition.ImportReference(newItem);
             }
         }
     }

@@ -55,48 +55,8 @@ namespace Substitute
             }
         }
 
-        [NotNull]
-        public static MethodReference Find([NotNull] this TypeDefinition type, [NotNull] MethodDefinition template, [NotNull] ModuleDefinition targetModule)
-        {
-            var signature = template.GetSignature(type);
-
-            var newItem = type.Methods?.FirstOrDefault(m => m.GetSignature() == signature);
-
-            if (newItem == null)
-            {
-                throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because it does not contain a method {signature}.", type);
-            }
-
-            if (newItem.IsPrivate)
-            {
-                throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because the method {signature} is private.", type);
-            }
-
-            return targetModule.ImportReference(newItem);
-        }
-
-        [NotNull]
-        public static FieldReference Find([NotNull] this TypeDefinition type, [NotNull] FieldDefinition template, [NotNull] ModuleDefinition targetModule)
-        {
-            var signature = template.GetSignature(type);
-
-            var newItem = type.Fields?.FirstOrDefault(m => m.GetSignature() == signature);
-
-            if (newItem == null)
-            {
-                throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because it does not contain a field {signature}.", type);
-            }
-
-            if (newItem.IsPrivate)
-            {
-                throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because the field {signature} is private.", type);
-            }
-
-            return targetModule.ImportReference(newItem);
-        }
-
         [CanBeNull]
-        private static string GetSignature([CanBeNull] this IMemberDefinition member, [CanBeNull] TypeDefinition targetType = null)
+        public static string GetSignature([CanBeNull] this IMemberDefinition member, [CanBeNull] TypeDefinition targetType = null)
         {
             if (member == null)
                 return null;
