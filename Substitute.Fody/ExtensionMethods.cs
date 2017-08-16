@@ -14,16 +14,38 @@ namespace Substitute
     internal static class ExtensionMethods
     {
         [NotNull]
-        [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute"), SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         public static IDictionary<TypeReference, TypeDefinition> CreateSubstitutionMap([NotNull] this ModuleDefinition moduleDefinition)
-            => moduleDefinition.Assembly.CustomAttributes
+            => moduleDefinition.GetTypeMappings()
+                .VerfifyNoDuplicates()
+                .ToDictionary(item => item.Key, item => item.Value, TypeReferenceEqualityComparer.Default);
+
+        [NotNull]
+        private static IList<KeyValuePair<TypeReference, TypeDefinition>> VerfifyNoDuplicates([NotNull] this IList<KeyValuePair<TypeReference, TypeDefinition>> typeMappings)
+        {
+            var duplicateDefinition = typeMappings
+                .GroupBy(item => item.Key, TypeReferenceEqualityComparer.Default)
+                // ReSharper disable once AssignNullToNotNullAttribute
+                .Where(group => group.Count() > 1)
+                .Select(group => group.Key)
+                .FirstOrDefault();
+
+            if (duplicateDefinition != null)
+                throw new WeavingException($"Duplicate substitution mapping for type {duplicateDefinition}", duplicateDefinition);
+
+            return typeMappings;
+        }
+
+        [NotNull]
+        [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute"), SuppressMessage("ReSharper", "PossibleNullReferenceException")]
+        private static IList<KeyValuePair<TypeReference, TypeDefinition>> GetTypeMappings([NotNull] this ModuleDefinition moduleDefinition)
+        {
+            return moduleDefinition.Assembly.CustomAttributes
                 .Where(ca => ca.AttributeType?.FullName == "Substitute.SubstituteAttribute")
                 .Where(attr => attr.ConstructorArguments.Count == 2)
                 .Where(attr => attr.ConstructorArguments.All(ca => ca.Type.FullName == "System.Type"))
-                .ToDictionary(
-                    attr => (TypeReference)attr.ConstructorArguments[0].Value,
-                    attr => moduleDefinition.ImportReference((TypeReference)attr.ConstructorArguments[1].Value).Resolve(),
-                    TypeReferenceEqualityComparer.Default);
+                .Select(attr => new KeyValuePair<TypeReference, TypeDefinition>((TypeReference)attr.ConstructorArguments[0].Value, moduleDefinition.ImportReference((TypeReference)attr.ConstructorArguments[1].Value).Resolve()))
+                .ToArray();
+        }
 
 
         [NotNull, ItemNotNull]
@@ -79,8 +101,10 @@ namespace Substitute
         }
 
         [NotNull]
-        public static IDictionary<TypeReference, TypeDefinition> Validate([NotNull] this IDictionary<TypeReference, TypeDefinition> substitutionMap)
+        public static IDictionary<TypeReference, Exception> GetUnmappedTypeErrors([NotNull] this IDictionary<TypeReference, TypeDefinition> substitutionMap)
         {
+            var invalidTypes = new Dictionary<TypeReference, Exception>(TypeReferenceEqualityComparer.Default);
+
             foreach (var entry in substitutionMap)
             {
                 var source = entry.Key;
@@ -89,8 +113,17 @@ namespace Substitute
                 Contract.Assume(source != null);
                 Contract.Assume(target != null);
 
+                // TODO: interfaces implemented by base classes?
+                // ReSharper disable AssignNullToNotNullAttribute
+                // ReSharper disable PossibleNullReferenceException
+                var targetInterfaces = new HashSet<TypeReference>(target.Interfaces.Select(i => i.InterfaceType), TypeReferenceEqualityComparer.Default);
+                if (!source.Resolve().Interfaces.Select(i => i.InterfaceType).All(t => targetInterfaces.Contains(t)))
+                    throw new WeavingException($@"{source} => {target} substitution error. Target must implement the same interfaces as source", target);
+                // ReSharper restore AssignNullToNotNullAttribute
+                // ReSharper restore PossibleNullReferenceException
+
                 var targetAndBases = target.GetSelfAndBaseTypes()
-                    .Select((reference, index) => new {reference, index})
+                    .Select((reference, index) => new { reference, index })
                     .ToDictionary(item => item.reference, item => item.index, TypeReferenceEqualityComparer.Default);
 
                 var lastTargetIndex = 0;
@@ -101,27 +134,32 @@ namespace Substitute
                 {
                     Contract.Assume(sourceBase != null);
 
-                    if (targetAndBases.TryGetValue(sourceBase, out var index) && (index > lastTargetIndex))
+                    if (targetAndBases.TryGetValue(sourceBase, out var index))
                     {
+                        if (index <= lastTargetIndex)
+                            throw new WeavingException($@"{source} => {target} substitution error. There is a cross-mapping in the type hierarchies.", target);
+
                         lastTargetIndex = index;
                         continue;
                     }
 
-                    if (substitutionMap.TryGetValue(sourceBase, out var targetBase) && targetAndBases.TryGetValue(targetBase, out index) && (index >= lastTargetIndex))
+                    if (substitutionMap.TryGetValue(sourceBase, out var targetBase) && targetAndBases.TryGetValue(targetBase, out index))
                     {
+                        if (index < lastTargetIndex)
+                            throw new WeavingException($@"{source} => {target} substitution error. There is a cross-mapping in the type hierarchies.", target);
+
                         lastTargetIndex = index;
                         continue;
                     }
 
-                    throw new WeavingException(
+                    invalidTypes[sourceBase] = new WeavingException(
 $@"{source} => {target} substitution error. {source} derives from {sourceBase}, but there is no direct or substituted counterpart for {sourceBase} in the targets base classes.
 Either derive {target} from {sourceBase}, or substitute {sourceBase} with {target} or one of it's base classes."
-                        
                         , target);
                 }
             }
 
-            return substitutionMap;
+            return invalidTypes;
         }
 
         [CanBeNull]

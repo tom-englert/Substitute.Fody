@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using JetBrains.Annotations;
@@ -33,12 +34,15 @@ namespace Substitute
             private readonly IDictionary<TypeReference, TypeDefinition> _substitutionMap;
             [NotNull, ItemNotNull]
             private readonly HashSet<TypeReference> _substitutes;
+            [NotNull]
+            private readonly IDictionary<TypeReference, Exception> _unmappedTypeErrors;
 
             public Weaver([NotNull] ModuleDefinition moduleDefinition)
             {
                 _moduleDefinition = moduleDefinition;
-                _substitutionMap = moduleDefinition.CreateSubstitutionMap().Validate();
+                _substitutionMap = moduleDefinition.CreateSubstitutionMap();
                 _substitutes = new HashSet<TypeReference>(_substitutionMap.Values, TypeReferenceEqualityComparer.Default);
+                _unmappedTypeErrors = _substitutionMap.GetUnmappedTypeErrors();
             }
 
             internal void Weave()
@@ -120,18 +124,21 @@ namespace Substitute
             {
                 if (_substitutionMap.TryGetValue(type, out var substitute))
                 {
+                    // ReSharper disable once AssignNullToNotNullAttribute
                     return _moduleDefinition.ImportReference(substitute);
                 }
 
-                if (_validatedTypes.Contains(type))
-                    return type;
+                if (_validatedTypes.Add(type))
+                {
+                    if (_unmappedTypeErrors.TryGetValue(type, out var error))
+                        throw error;
 
-                var substitutedBaseType = type.GetBaseTypes().FirstOrDefault(baseType => _substitutionMap.ContainsKey(baseType));
+                    var substitutedBaseType = type.GetBaseTypes().FirstOrDefault(baseType => _substitutionMap.ContainsKey(baseType));
 
-                if (substitutedBaseType != null)
-                    throw new WeavingException($"{type} is not substituted, but is derived from the substituted type {substitutedBaseType}. You must substitute {type}, too.", type);
+                    if (substitutedBaseType != null)
+                        throw new WeavingException($"{type} is not substituted, but is derived from the substituted type {substitutedBaseType}. You must substitute {type}, too.", type);
+                }
 
-                _validatedTypes.Add(type);
                 return type;
             }
 
@@ -150,7 +157,7 @@ namespace Substitute
             }
 
             [NotNull]
-            public MethodReference Find([NotNull] TypeDefinition type, [NotNull] MethodDefinition template)
+            private MethodReference Find([NotNull] TypeDefinition type, [NotNull] MethodDefinition template)
             {
                 var signature = template.GetSignature(type);
 
@@ -166,11 +173,12 @@ namespace Substitute
                     throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because the method {signature} is private.", type);
                 }
 
+                // ReSharper disable once AssignNullToNotNullAttribute
                 return _moduleDefinition.ImportReference(newItem);
             }
 
             [NotNull]
-            public FieldReference Find([NotNull] TypeDefinition type, [NotNull] FieldDefinition template)
+            private FieldReference Find([NotNull] TypeDefinition type, [NotNull] FieldDefinition template)
             {
                 var signature = template.GetSignature(type);
 
@@ -186,6 +194,7 @@ namespace Substitute
                     throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because the field {signature} is private.", type);
                 }
 
+                // ReSharper disable once AssignNullToNotNullAttribute
                 return _moduleDefinition.ImportReference(newItem);
             }
         }

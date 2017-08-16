@@ -16,7 +16,7 @@ namespace Substitute
         [NotNull]
         public static IEqualityComparer<TypeReference> Default { get; } = new TypeReferenceEqualityComparer();
 
-        public bool Equals([CanBeNull] TypeReference x, [CanBeNull] TypeReference y)
+        public bool Equals(TypeReference x, TypeReference y)
         {
             return GetKey(x) == GetKey(y);
         }
