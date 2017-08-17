@@ -1,4 +1,6 @@
-﻿// ReSharper disable All
+﻿// This is test code, no warnings please...
+// ReSharper disable All
+#pragma warning disable 
 
 using System;
 using System.Windows.Forms;

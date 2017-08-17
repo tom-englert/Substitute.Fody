@@ -9,7 +9,7 @@
     <Rule Id="CCRSI_NotNullForContract" Action="None" />
   </Rules>
   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
-    <Rule Id="CA1020" Action="Warning" />
+    <Rule Id="CA1020" Action="None" />
     <Rule Id="CA1300" Action="None" />
     <Rule Id="CA1301" Action="None" />
     <Rule Id="CA1302" Action="None" />

@@ -5,52 +5,53 @@ using JetBrains.Annotations;
 
 using Mono.Cecil;
 
-using Substitute;
-
-internal static class ReferenceCleaner
-{
-    [NotNull]
-    private static readonly HashSet<string> _attributeNames = new HashSet<string>
+namespace Substitute
+{ 
+    internal static class ReferenceCleaner
     {
-        "Substitute.SubstituteAttribute"
-    };
-
-    private static void ProcessAssembly([NotNull] ModuleDefinition moduleDefinition)
-    {
-        // ReSharper disable once PossibleNullReferenceException
-        // ReSharper disable once AssignNullToNotNullAttribute
-        RemoveAttributes(moduleDefinition.Assembly.CustomAttributes);
-    }
-
-    private static void RemoveAttributes([NotNull, ItemNotNull] ICollection<CustomAttribute> customAttributes)
-    {
-        var attributes = customAttributes
-            .Where(attribute => _attributeNames.Contains(attribute.Constructor?.DeclaringType?.FullName))
-            .ToArray();
-
-        foreach (var customAttribute in attributes.ToList())
+        [NotNull] 
+        private static readonly HashSet<string> _attributeNames = new HashSet<string>
         {
-            customAttributes.Remove(customAttribute);
-        }
-    }
+            "Substitute.SubstituteAttribute"
+        };
 
-    public static void RemoveReferences([NotNull] this ModuleDefinition moduleDefinition, [NotNull] ILogger logger)
-    {
-        ProcessAssembly(moduleDefinition);
-
-        // ReSharper disable once AssignNullToNotNullAttribute
-        // ReSharper disable once PossibleNullReferenceException
-        var referenceToRemove = moduleDefinition.AssemblyReferences.FirstOrDefault(x => x.Name == "Substitute");
-        if (referenceToRemove == null)
+        private static void ProcessAssembly([NotNull] ModuleDefinition moduleDefinition)
         {
-            logger.LogInfo("\tNo reference to 'Substitute' found. References not modified.");
-            return;
+            // ReSharper disable once PossibleNullReferenceException
+            // ReSharper disable once AssignNullToNotNullAttribute
+            RemoveAttributes(moduleDefinition.Assembly.CustomAttributes);
         }
 
-        logger.LogInfo("\tRemoving reference to 'Substitute'.");
-        if (!moduleDefinition.AssemblyReferences.Remove(referenceToRemove))
+        private static void RemoveAttributes([NotNull, ItemNotNull] ICollection<CustomAttribute> customAttributes)
         {
-            logger.LogWarning("\tCould not remove all references to 'Substitute'.");
+            var attributes = customAttributes
+                .Where(attribute => _attributeNames.Contains(attribute.Constructor?.DeclaringType?.FullName))
+                .ToArray();
+
+            foreach (var customAttribute in attributes.ToList())
+            {
+                customAttributes.Remove(customAttribute);
+            }
+        }
+
+        public static void RemoveReferences([NotNull] this ModuleDefinition moduleDefinition, [NotNull] ILogger logger)
+        {
+            ProcessAssembly(moduleDefinition);
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            // ReSharper disable once PossibleNullReferenceException
+            var referenceToRemove = moduleDefinition.AssemblyReferences.FirstOrDefault(x => x.Name == "Substitute");
+            if (referenceToRemove == null)
+            {
+                logger.LogInfo("\tNo reference to 'Substitute' found. References not modified.");
+                return;
+            }
+
+            logger.LogInfo("\tRemoving reference to 'Substitute'.");
+            if (!moduleDefinition.AssemblyReferences.Remove(referenceToRemove))
+            {
+                logger.LogWarning("\tCould not remove all references to 'Substitute'.");
+            }
         }
     }
 }
