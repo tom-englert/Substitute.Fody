@@ -3,16 +3,20 @@
   <ItemGroup>
     <MultiTarget Include="Test1">
       <Defines>ACCESS_BASE;DERIVE_BASE</Defines>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </MultiTarget>
     <MultiTarget Include="Test2">
       <Defines>ACCESS_BASE;SUBSTITUTE_BASE</Defines>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </MultiTarget>
     <MultiTarget Include="Test3">
       <Defines>ACCESS_BASE</Defines>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </MultiTarget>
     <MultiTarget Include="Test4">
       <Defines>
       </Defines>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </MultiTarget>
   </ItemGroup>
   <ItemGroup>
@@ -41,8 +45,8 @@
       <IntermediateOutputPath>obj\$(Configuration)\%(MultiTarget.Identity)\</IntermediateOutputPath>
     </PropertyGroup>
     <MSBuild Projects="AssemblyToProcess.csproj" Targets="Build" Properties="DefineConstants=$(DefineConstants);OutDir=$(OutDir);IntermediateOutputPath=$(IntermediateOutputPath);BuildingInsideVisualStudio=false" ContinueOnError="ErrorAndContinue" />
-	<!-- build empty dll, just to generate some output, so we can reference this to ensure proper build order -->
-	<CallTarget Targets="Build" />
+    <!-- build empty dll, just to generate some output, so we can reference this to ensure proper build order -->
+    <CallTarget Targets="Build" />
   </Target>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
