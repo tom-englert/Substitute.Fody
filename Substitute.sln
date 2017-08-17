@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Substitute.Fody", "Substitute.Fody\Substitute.Fody.csproj", "{9AF0FE45-9667-4033-93A5-799846B1A19A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{B3C4B812-EFBB-4261-BF94-7BFC57CFAA9F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B2C8028C-5BA6-4916-8AB3-A0ED95BE5FDA} = {B2C8028C-5BA6-4916-8AB3-A0ED95BE5FDA}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nuget", "NuGet\Nuget.csproj", "{878E96F1-3F27-4969-AC21-A66C7FA1ADF2}"
 	ProjectSection(ProjectDependencies) = postProject

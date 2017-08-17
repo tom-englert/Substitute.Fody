@@ -65,10 +65,6 @@
     <Compile Include="WeaverTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AssemblyToProcess\MultiBuild.csproj">
-      <Project>{b2c8028c-5ba6-4916-8ab3-a0ed95be5fda}</Project>
-      <Name>MultiBuild</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Substitute.Fody\Substitute.Fody.csproj">
       <Project>{9AF0FE45-9667-4033-93A5-799846B1A19A}</Project>
       <Name>Substitute.Fody</Name>
