@@ -43,8 +43,6 @@
       <IntermediateOutputPath>obj\$(Configuration)\%(MultiTarget.Identity)\</IntermediateOutputPath>
     </PropertyGroup>
     <MSBuild Projects="AssemblyToProcess.csproj" Targets="Build" Properties="DefineConstants=$(DefineConstants);OutDir=$(OutDir);IntermediateOutputPath=$(IntermediateOutputPath);BuildingInsideVisualStudio=false" ContinueOnError="ErrorAndContinue" />
-    <!-- build empty dll, just to generate some output, so we can reference this to ensure proper build order -->
-    <CallTarget Targets="Build" />
   </Target>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
