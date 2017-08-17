@@ -3,20 +3,16 @@
   <ItemGroup>
     <MultiTarget Include="Test1">
       <Defines>ACCESS_BASE;DERIVE_BASE</Defines>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </MultiTarget>
     <MultiTarget Include="Test2">
       <Defines>ACCESS_BASE;SUBSTITUTE_BASE</Defines>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </MultiTarget>
     <MultiTarget Include="Test3">
       <Defines>ACCESS_BASE</Defines>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </MultiTarget>
     <MultiTarget Include="Test4">
       <Defines>
       </Defines>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </MultiTarget>
   </ItemGroup>
   <ItemGroup>
