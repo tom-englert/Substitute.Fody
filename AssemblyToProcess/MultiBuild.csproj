@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="MultiBuild" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <MultiTarget Include="Test1" />
+    <MultiTarget Include="Test2" />
+    <MultiTarget Include="Test3" />
+  </ItemGroup>
+  <PropertyGroup>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <Prefer32Bit>false</Prefer32Bit>
+    <OutputType>Library</OutputType>
+    <ProjectGuid>{B2C8028C-5BA6-4916-8AB3-A0ED95BE5FDA}</ProjectGuid>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <Target Name="MultiBuild" Returns="%(MultiTarget.Identity)">
+    <PropertyGroup>
+      <OutDir>$(OutputPath)%(MultiTarget.Identity)\</OutDir>
+      <DefineConstants>TRACE;%(MultiTarget.Identity)</DefineConstants>
+      <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">DEBUG;$(DefineConstants)</DefineConstants>
+      <IntermediateOutputPath>obj\$(Configuration)\%(MultiTarget.Identity)\</IntermediateOutputPath>
+    </PropertyGroup>
+    <MSBuild Projects="AssemblyToProcess.csproj" Targets="Build" Properties="DefineConstants=$(DefineConstants);OutDir=$(OutDir);IntermediateOutputPath=$(IntermediateOutputPath);BuildingInsideVisualStudio=false" ContinueOnError="ErrorAndContinue" />
+  </Target>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
