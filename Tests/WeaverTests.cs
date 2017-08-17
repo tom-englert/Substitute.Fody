@@ -1,4 +1,6 @@
-﻿using JetBrains.Annotations;
+﻿using System.Linq;
+
+using JetBrains.Annotations;
 
 using NUnit.Framework;
 
@@ -7,12 +9,17 @@ using Tests;
 [TestFixture]
 public class WeaverTests
 {
-    [NotNull]
-    private readonly WeaverHelper _weaverHelper = WeaverHelper.Create();
-
-    [Test]
-    public void PeVerify()
+    [TestCase("Test1")]
+    [TestCase("Test2")]
+    [TestCase("Test3")]
+    [TestCase("Test4")]
+    public void PeVerify([NotNull] string test)
     {
-        Verifier.Verify(_weaverHelper.OriginalAssemblyPath, _weaverHelper.NewAssemblyPath);
+        var weaverHelper = WeaverHelper.Create($"{test}/AssemblyToProcess");
+
+        if (weaverHelper.Errors.Any())
+            return; // weaver has reported errors, output *is* damaged, no need to verify...
+
+        Verifier.Verify(weaverHelper.OriginalAssemblyPath, weaverHelper.NewAssemblyPath);
     }
 }

@@ -35,24 +35,27 @@ namespace Tests
 #endif
 
         [NotNull]
-        public static WeaverHelper Create([NotNull] string assemblyName = "AssemblyToProcess")
+        public static WeaverHelper Create([NotNull] string assemblyKey = "AssemblyToProcess")
         {
             lock (typeof(WeaverHelper))
             {
                 // ReSharper disable once AssignNullToNotNullAttribute
-                return _cache.ForceValue(assemblyName, _ => new WeaverHelper(assemblyName));
+                return _cache.ForceValue(assemblyKey, _ => new WeaverHelper(assemblyKey));
             }
         }
 
-        private WeaverHelper([NotNull] string assemblyName)
+        [NotNull, ItemNotNull]
+        public IList<string> Errors { get; } = new List<string>();
+
+        private WeaverHelper([NotNull] string assemblyKey)
         {
             // ReSharper disable once AssignNullToNotNullAttribute
             // ReSharper disable once PossibleNullReferenceException
+            var assemblyName = Path.GetFileNameWithoutExtension(assemblyKey);
+
             var projectDir = Path.GetFullPath(Path.Combine(TestContext.CurrentContext.TestDirectory, $@"..\..\..\{assemblyName}"));
 
-            var binaryDir = Path.Combine(projectDir, $@"bin\{Configuration}");
-            OriginalAssemblyPath = Path.Combine(binaryDir, $@"{assemblyName}.dll");
-
+            OriginalAssemblyPath = Path.Combine(projectDir, $@"bin\{Configuration}", $@"{assemblyKey}.dll");
             NewAssemblyPath = OriginalAssemblyPath.Replace(".dll", "2.dll");
 
             using (var moduleDefinition = ModuleDefinition.ReadModule(OriginalAssemblyPath, new ReaderParameters(ReadingMode.Immediate) { ReadSymbols = true }))
@@ -64,8 +67,8 @@ namespace Tests
                     ModuleDefinition = moduleDefinition
                 };
 
-                weavingTask.LogError = Assert.Fail;
-                weavingTask.LogErrorPoint = (s, point) => Assert.Fail(s);
+                weavingTask.LogError = s => Errors.Add(s);
+                weavingTask.LogErrorPoint = (s, point) => Errors.Add(s);
                 weavingTask.Execute();
 
                 var assemblyNameDefinition = moduleDefinition.Assembly?.Name;

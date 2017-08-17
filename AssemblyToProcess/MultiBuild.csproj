@@ -1,9 +1,29 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="MultiBuild" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <MultiTarget Include="Test1" />
-    <MultiTarget Include="Test2" />
-    <MultiTarget Include="Test3" />
+    <MultiTarget Include="Test1">
+      <Defines>ACCESS_BASE;DERIVE_BASE</Defines>
+    </MultiTarget>
+    <MultiTarget Include="Test2">
+      <Defines>ACCESS_BASE;SUBSTITUTE_BASE</Defines>
+    </MultiTarget>
+    <MultiTarget Include="Test3">
+      <Defines>ACCESS_BASE</Defines>
+    </MultiTarget>
+    <MultiTarget Include="Test4">
+      <Defines>
+      </Defines>
+    </MultiTarget>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Substitute.Fody\Substitute.Fody.csproj">
+      <Project>{9af0fe45-9667-4033-93a5-799846b1a19a}</Project>
+      <Name>Substitute.Fody</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Substitute\Substitute.csproj">
+      <Project>{88856d9c-8c44-4f9c-8b3d-6c29ccc7b08e}</Project>
+      <Name>Substitute</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <OutputPath>bin\$(Configuration)\</OutputPath>
@@ -16,11 +36,13 @@
   <Target Name="MultiBuild" Returns="%(MultiTarget.Identity)">
     <PropertyGroup>
       <OutDir>$(OutputPath)%(MultiTarget.Identity)\</OutDir>
-      <DefineConstants>TRACE;%(MultiTarget.Identity)</DefineConstants>
+      <DefineConstants>TRACE;%(MultiTarget.Defines)</DefineConstants>
       <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">DEBUG;$(DefineConstants)</DefineConstants>
       <IntermediateOutputPath>obj\$(Configuration)\%(MultiTarget.Identity)\</IntermediateOutputPath>
     </PropertyGroup>
     <MSBuild Projects="AssemblyToProcess.csproj" Targets="Build" Properties="DefineConstants=$(DefineConstants);OutDir=$(OutDir);IntermediateOutputPath=$(IntermediateOutputPath);BuildingInsideVisualStudio=false" ContinueOnError="ErrorAndContinue" />
+	<!-- build empty dll, just to generate some output, so we can reference this to ensure proper build order -->
+	<CallTarget Targets="Build" />
   </Target>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -45,7 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="MyResourceManager.cs" />
     <Compile Include="TestForm.cs">
       <SubType>Form</SubType>
     </Compile>
