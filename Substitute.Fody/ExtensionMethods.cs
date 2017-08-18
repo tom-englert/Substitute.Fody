@@ -25,12 +25,12 @@ namespace Substitute
             var duplicateDefinition = typeMappings
                 .GroupBy(item => item.Key, TypeReferenceEqualityComparer.Default)
                 // ReSharper disable once AssignNullToNotNullAttribute
-                .Where(group => group.Count() > 1)
-                .Select(group => group.Key)
+                .Where(group => @group.Count() > 1)
+                .Select(group => @group.Key)
                 .FirstOrDefault();
 
             if (duplicateDefinition != null)
-                throw new WeavingException($"Duplicate substitution mapping for type {duplicateDefinition}", duplicateDefinition);
+                throw new WeavingException($"Duplicate substitution mapping for type {duplicateDefinition}.", duplicateDefinition);
 
             return typeMappings;
         }
@@ -67,6 +67,13 @@ namespace Substitute
                 yield return type;
             }
         }
+
+        [NotNull, ItemNotNull]
+        public static IEnumerable<TypeReference> GetAllInterfaces([NotNull] this TypeReference type)
+        {
+            return type.GetSelfAndBaseTypes().SelectMany(t => t.Resolve().Interfaces.Select(i => i.InterfaceType));
+        }
+
 
         public static void ReplaceItems<T>([NotNull, ItemCanBeNull] this IList<T> items, [NotNull] Func<T, T> replace)
             where T : TypeReference
@@ -116,9 +123,11 @@ namespace Substitute
                 // TODO: interfaces implemented by base classes?
                 // ReSharper disable AssignNullToNotNullAttribute
                 // ReSharper disable PossibleNullReferenceException
-                var targetInterfaces = new HashSet<TypeReference>(target.Interfaces.Select(i => i.InterfaceType), TypeReferenceEqualityComparer.Default);
-                if (!source.Resolve().Interfaces.Select(i => i.InterfaceType).All(t => targetInterfaces.Contains(t)))
-                    throw new WeavingException($@"{source} => {target} substitution error. Target must implement the same interfaces as source", target);
+                var targetInterfaces = new HashSet<TypeReference>(target.GetAllInterfaces(), TypeReferenceEqualityComparer.Default);
+                var sourceInterfaces = source.GetAllInterfaces();
+
+                if (!sourceInterfaces.All(t => targetInterfaces.Contains(t)))
+                    throw new WeavingException($@"{source} => {target} substitution error. Target must implement the same interfaces as source.", target);
                 // ReSharper restore AssignNullToNotNullAttribute
                 // ReSharper restore PossibleNullReferenceException
 
@@ -170,6 +179,13 @@ Either derive {target} from {sourceBase}, or substitute {sourceBase} with {targe
             var method = definition?.Methods?.FirstOrDefault();
 
             return method == null ? null : definition.Module?.SymbolReader?.Read(method)?.SequencePoints?.FirstOrDefault();
+        }
+
+        public static void CheckRecursions(this IDictionary<TypeReference, TypeDefinition> substitutionMap, HashSet<TypeReference> substitutes)
+        {
+            var recursion = substitutionMap.Keys.FirstOrDefault(item => substitutes.Contains(item));
+            if (recursion != null)
+                throw new WeavingException($"{recursion} is both source and target of a substitution.", recursion);
         }
     }
 }

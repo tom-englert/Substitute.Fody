@@ -13,6 +13,9 @@ public class WeaverTests
     [TestCase("Test2")]
     [TestCase("Test3")]
     [TestCase("Test4")]
+    [TestCase("Test5")]
+    [TestCase("Test6")]
+    [TestCase("Test7")]
     public void PeVerify([NotNull] string test)
     {
         var weaverHelper = WeaverHelper.Create($"{test}/AssemblyToProcess");

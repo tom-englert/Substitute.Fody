@@ -42,6 +42,8 @@ namespace Substitute
                 _moduleDefinition = moduleDefinition;
                 _substitutionMap = moduleDefinition.CreateSubstitutionMap();
                 _substitutes = new HashSet<TypeReference>(_substitutionMap.Values, TypeReferenceEqualityComparer.Default);
+                _substitutionMap.CheckRecursions(_substitutes);
+
                 _unmappedTypeErrors = _substitutionMap.GetUnmappedTypeErrors();
             }
 

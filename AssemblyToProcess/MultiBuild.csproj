@@ -4,18 +4,27 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' "/>
   <ItemGroup>
     <MultiTarget Include="Test1">
-      <Defines>ACCESS_BASE;DERIVE_BASE</Defines>
+      <Defines />
     </MultiTarget>
     <MultiTarget Include="Test2">
       <Defines>ACCESS_BASE;SUBSTITUTE_BASE</Defines>
     </MultiTarget>
     <MultiTarget Include="Test3">
-      <Defines>ACCESS_BASE</Defines>
+      <Defines>ACCESS_BASE;DERIVE_BASE</Defines>
     </MultiTarget>
     <MultiTarget Include="Test4">
-      <Defines>
-      </Defines>
+      <Defines>ACCESS_BASE</Defines>
     </MultiTarget>
+    <MultiTarget Include="Test5">
+      <Defines>MISSING_INTERFACES</Defines>
+    </MultiTarget>
+    <MultiTarget Include="Test6">
+      <Defines>DUPLICATE</Defines>
+    </MultiTarget>
+    <MultiTarget Include="Test7">
+      <Defines>RECURSION</Defines>
+    </MultiTarget>
+
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Substitute.Fody\Substitute.Fody.csproj">
