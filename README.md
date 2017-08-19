@@ -118,8 +118,9 @@ If you want to substitute a class A with a class X
 - class X must implement all members of class A that are accessed by code in the assembly, with the same name, parameters and return type.
 - class X does not need to implement members of class A that are not accessed by code in this assembly.
 - you must not use any class derived from A unless you substitute it, too.
+- if class A implements any interface, either directly or by inheritance, class X must implement at least all interfaces of A, either directly or by inheritance.
 
-If class A is derived from class B, either 
+If class A is derived from class B, and any member of B is accessed by code in the assembly, either 
 
 1. derive class X also from B
 2. substitute class B also with class X and implement all needed methods in X
