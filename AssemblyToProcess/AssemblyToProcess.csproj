@@ -51,6 +51,7 @@
     <Compile Include="TestForm.Designer.cs">
       <DependentUpon>TestForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="WithGenerics.cs" />
     <Compile Include="WithInterface.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 using JetBrains.Annotations;
 
@@ -19,6 +18,12 @@ public class FodyTests
 
         Assert.AreEqual("Form:MyResourceManager", form.Text);
         Assert.AreEqual("Constant", form.Value);
+    }
+
+    [Test]
+    public void Test1a()
+    {
+        var assembly = WeaverHelper.Create("Test1/AssemblyToProcess").Assembly;
 
         var target = assembly.GetInstance("AssemblyToProcess.UsageOfInterface");
         var expected = new[] { "A", "B", "C" };
@@ -62,7 +67,7 @@ Either derive AssemblyToProcess.MyResourceManager from System.Resources.Resource
     [TestCase("Test5", expectedError5)]
     [TestCase("Test6", expectedError6)]
     [TestCase("Test7", expectedError7)]
-    public void Test_Errors(string test, string expectedError)
+    public void Test_Errors([NotNull] string test, [NotNull] string expectedError)
     {
         var weaverHelper = WeaverHelper.Create($"{test}/AssemblyToProcess");
 

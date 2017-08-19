@@ -69,6 +69,8 @@ namespace Substitute
         }
 
         [NotNull, ItemNotNull]
+        [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
+        [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         public static IEnumerable<TypeReference> GetAllInterfaces([NotNull] this TypeReference type)
         {
             return type.GetSelfAndBaseTypes().SelectMany(t => t.Resolve().Interfaces.Select(i => i.InterfaceType));
@@ -181,9 +183,10 @@ Either derive {target} from {sourceBase}, or substitute {sourceBase} with {targe
             return method == null ? null : definition.Module?.SymbolReader?.Read(method)?.SequencePoints?.FirstOrDefault();
         }
 
-        public static void CheckRecursions(this IDictionary<TypeReference, TypeDefinition> substitutionMap, HashSet<TypeReference> substitutes)
+        public static void CheckRecursions([NotNull] this IDictionary<TypeReference, TypeDefinition> substitutionMap, [NotNull, ItemNotNull] HashSet<TypeReference> substitutes)
         {
-            var recursion = substitutionMap.Keys.FirstOrDefault(item => substitutes.Contains(item));
+            var recursion = substitutionMap.Keys.FirstOrDefault(substitutes.Contains);
+
             if (recursion != null)
                 throw new WeavingException($"{recursion} is both source and target of a substitution.", recursion);
         }

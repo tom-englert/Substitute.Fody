@@ -1,4 +1,8 @@
-﻿using System.Collections;
+﻿// This is test code, no warnings please...
+// ReSharper disable All
+#pragma warning disable 
+
+using System.Collections;
 using System.Collections.Generic;
 
 using AssemblyToProcess;

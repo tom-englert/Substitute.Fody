@@ -130,6 +130,20 @@ namespace Substitute
                     return _moduleDefinition.ImportReference(substitute);
                 }
 
+                if (type is GenericInstanceType genericType)
+                {
+                    // ReSharper disable once AssignNullToNotNullAttribute
+                    genericType.GenericArguments.ReplaceItems(GetSubstitute);
+                }
+
+                // ReSharper disable once PossibleNullReferenceException
+                foreach (var genericParameter in type.GenericParameters)
+                {
+                    // ReSharper disable once AssignNullToNotNullAttribute
+                    // ReSharper disable once PossibleNullReferenceException
+                    genericParameter.Constraints.ReplaceItems(GetSubstitute);
+                }
+
                 if (_validatedTypes.Add(type))
                 {
                     if (_unmappedTypeErrors.TryGetValue(type, out var error))
