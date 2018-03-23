@@ -83,4 +83,10 @@
     </CodeAnalysisDictionary>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="Postbuild" AfterTargets="Build">
+    <Message Text="Copy weaver to tools folder" />
+    <MakeDir Directories="$(SolutionDir)Tools" />
+    <Copy SourceFiles="$(TargetDir)Substitute.Fody.dll" DestinationFolder="$(SolutionDir)Tools" />
+    <Copy SourceFiles="$(TargetDir)Substitute.Fody.pdb" DestinationFolder="$(SolutionDir)Tools" />
+  </Target>
 </Project>
