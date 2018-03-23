@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
+using System.Resources;
 using System.Runtime.InteropServices;
 using Substitute;
 using WeaverSmokeTestCS;
@@ -16,3 +17,4 @@ using WeaverSmokeTestCS;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
 [assembly: Substitute(typeof(ComponentResourceManager), typeof(MyComponentResourceManager))]
+[assembly: Substitute(typeof(ResourceManager), typeof(MyResourceManager))]
