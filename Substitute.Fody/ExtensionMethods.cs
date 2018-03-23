@@ -43,7 +43,7 @@ namespace Substitute
                 .Where(ca => ca.AttributeType?.FullName == "Substitute.SubstituteAttribute")
                 .Where(attr => attr.ConstructorArguments.Count == 2)
                 .Where(attr => attr.ConstructorArguments.All(ca => ca.Type.FullName == "System.Type"))
-                .Select(attr => new KeyValuePair<TypeReference, TypeDefinition>((TypeReference)attr.ConstructorArguments[0].Value, moduleDefinition.ImportReference((TypeReference)attr.ConstructorArguments[1].Value).Resolve()))
+                .Select(attr => new KeyValuePair<TypeReference, TypeDefinition>((TypeReference)attr.ConstructorArguments[0].Value, moduleDefinition.ImportReference((TypeReference)attr.ConstructorArguments[1].Value).ResolveStrict()))
                 .ToArray();
         }
 
@@ -73,7 +73,7 @@ namespace Substitute
         [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         public static IEnumerable<TypeReference> GetAllInterfaces([NotNull] this TypeReference type)
         {
-            return type.GetSelfAndBaseTypes().SelectMany(t => t.Resolve().Interfaces.Select(i => i.InterfaceType));
+            return type.GetSelfAndBaseTypes().SelectMany(t => t.ResolveStrict().Interfaces.Select(i => i.InterfaceType));
         }
 
 
@@ -189,6 +189,12 @@ Either derive {target} from {sourceBase}, or substitute {sourceBase} with {targe
 
             if (recursion != null)
                 throw new WeavingException($"{recursion} is both source and target of a substitution.", recursion);
+        }
+
+        [NotNull]
+        public static TypeDefinition ResolveStrict([NotNull] this TypeReference reference)
+        {
+            return reference.Resolve() ?? throw new WeavingException($"Unable to resolve type {reference}", reference);
         }
     }
 }
