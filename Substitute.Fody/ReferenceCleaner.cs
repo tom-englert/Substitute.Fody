@@ -6,10 +6,10 @@ using JetBrains.Annotations;
 using Mono.Cecil;
 
 namespace Substitute
-{ 
+{
     internal static class ReferenceCleaner
     {
-        [NotNull] 
+        [NotNull]
         private static readonly HashSet<string> _attributeNames = new HashSet<string>
         {
             "Substitute.SubstituteAttribute"
@@ -31,26 +31,6 @@ namespace Substitute
             foreach (var customAttribute in attributes.ToList())
             {
                 customAttributes.Remove(customAttribute);
-            }
-        }
-
-        public static void RemoveReferences([NotNull] this ModuleDefinition moduleDefinition, [NotNull] ILogger logger)
-        {
-            ProcessAssembly(moduleDefinition);
-
-            // ReSharper disable once AssignNullToNotNullAttribute
-            // ReSharper disable once PossibleNullReferenceException
-            var referenceToRemove = moduleDefinition.AssemblyReferences.FirstOrDefault(x => x.Name == "Substitute");
-            if (referenceToRemove == null)
-            {
-                logger.LogInfo("\tNo reference to 'Substitute' found. References not modified.");
-                return;
-            }
-
-            logger.LogInfo("\tRemoving reference to 'Substitute'.");
-            if (!moduleDefinition.AssemblyReferences.Remove(referenceToRemove))
-            {
-                logger.LogWarning("\tCould not remove all references to 'Substitute'.");
             }
         }
     }

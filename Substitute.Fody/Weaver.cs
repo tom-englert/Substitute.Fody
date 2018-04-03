@@ -12,7 +12,6 @@ namespace Substitute
     internal static class WeaverExtensions
     {
         internal static void Weave([NotNull] this ModuleDefinition moduleDefinition, [NotNull] ILogger logger)
-
         {
             try
             {
