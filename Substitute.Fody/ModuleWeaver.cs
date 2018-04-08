@@ -16,6 +16,7 @@ namespace Substitute
         public override void Execute()
         {
             ModuleDefinition.Weave(this);
+            ModuleDefinition.RemoveReferences(this);
         }
 
         public override IEnumerable<string> GetAssembliesForScanning()

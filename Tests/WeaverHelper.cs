@@ -55,7 +55,7 @@ namespace Tests
 
             var projectDir = Path.GetFullPath(Path.Combine(TestContext.CurrentContext.TestDirectory, $@"..\..\..\{assemblyName}"));
 
-            OriginalAssemblyPath = Path.Combine(projectDir, $@"bin\{Configuration}", $@"{assemblyKey}.dll");
+            OriginalAssemblyPath = Path.Combine(projectDir, "bin", Configuration, $@"{assemblyKey}.dll");
             NewAssemblyPath = OriginalAssemblyPath.Replace(".dll", "2.dll");
 
             using (var moduleDefinition = ModuleDefinition.ReadModule(OriginalAssemblyPath, new ReaderParameters(ReadingMode.Immediate) { ReadSymbols = true }))

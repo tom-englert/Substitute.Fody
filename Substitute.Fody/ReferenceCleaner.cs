@@ -33,5 +33,10 @@ namespace Substitute
                 customAttributes.Remove(customAttribute);
             }
         }
+
+        public static void RemoveReferences([NotNull] this ModuleDefinition moduleDefinition, [NotNull] ILogger logger)
+        {
+            ProcessAssembly(moduleDefinition);
+        }
     }
 }
