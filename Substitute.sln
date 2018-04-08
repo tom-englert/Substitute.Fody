@@ -13,7 +13,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nuget", "NuGet\Nuget.csproj", "{878E96F1-3F27-4969-AC21-A66C7FA1ADF2}"
 	ProjectSection(ProjectDependencies) = postProject
 		{9AF0FE45-9667-4033-93A5-799846B1A19A} = {9AF0FE45-9667-4033-93A5-799846B1A19A}
-		{59ACF1B9-0CB8-4673-9E00-E742E2616959} = {59ACF1B9-0CB8-4673-9E00-E742E2616959}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyToProcess", "AssemblyToProcess\AssemblyToProcess.csproj", "{270EBFBC-0421-4522-AA40-84D66238A19F}"
@@ -26,8 +25,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Relase notes.md = Relase notes.md
 		Version.cs = Version.cs
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Substitute.portable", "Substitute\Substitute.portable.csproj", "{59ACF1B9-0CB8-4673-9E00-E742E2616959}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiBuild", "AssemblyToProcess\MultiBuild.csproj", "{B2C8028C-5BA6-4916-8AB3-A0ED95BE5FDA}"
 EndProject
@@ -61,10 +58,6 @@ Global
 		{88856D9C-8C44-4F9C-8B3D-6C29CCC7B08E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88856D9C-8C44-4F9C-8B3D-6C29CCC7B08E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88856D9C-8C44-4F9C-8B3D-6C29CCC7B08E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{59ACF1B9-0CB8-4673-9E00-E742E2616959}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{59ACF1B9-0CB8-4673-9E00-E742E2616959}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{59ACF1B9-0CB8-4673-9E00-E742E2616959}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{59ACF1B9-0CB8-4673-9E00-E742E2616959}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B2C8028C-5BA6-4916-8AB3-A0ED95BE5FDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B2C8028C-5BA6-4916-8AB3-A0ED95BE5FDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2C8028C-5BA6-4916-8AB3-A0ED95BE5FDA}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -3,17 +3,15 @@
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
-using System;
 using System.Collections.Generic;
 using Fody;
 using JetBrains.Annotations;
 
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Substitute
 {
-    public class ModuleWeaver :BaseModuleWeaver, ILogger
+    public class ModuleWeaver : BaseModuleWeaver, ILogger
     {
         public override void Execute()
         {

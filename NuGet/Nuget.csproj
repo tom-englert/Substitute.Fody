@@ -30,8 +30,8 @@
     <MakeDir Directories="$(SolutionDir)NuGetBuild" />
     <Copy SourceFiles="$(SolutionDir)Substitute\bin\$(Configuration)\netstandard1.0\Substitute.dll" DestinationFolder="$(SolutionDir)NuGetBuild\lib\netstandard1.0" />
     <Copy SourceFiles="$(SolutionDir)Substitute\bin\$(Configuration)\netstandard1.0\Substitute.xml" DestinationFolder="$(SolutionDir)NuGetBuild\lib\netstandard1.0" />
-    <Copy SourceFiles="$(SolutionDir)Substitute\bin\$(Configuration)\v4.0\Profile328\Substitute.dll" DestinationFolder="$(SolutionDir)NuGetBuild\lib\portable-net40+sl50+win+wpa81+wp80" />
-    <Copy SourceFiles="$(SolutionDir)Substitute\bin\$(Configuration)\v4.0\Profile328\Substitute.xml" DestinationFolder="$(SolutionDir)NuGetBuild\lib\portable-net40+sl50+win+wpa81+wp80" />
+    <Copy SourceFiles="$(SolutionDir)Substitute\bin\$(Configuration)\portable40-net40+sl5+win8+wp8+wpa81\Substitute.dll" DestinationFolder="$(SolutionDir)NuGetBuild\lib\portable-net40+sl50+win+wpa81+wp80" />
+    <Copy SourceFiles="$(SolutionDir)Substitute\bin\$(Configuration)\portable40-net40+sl5+win8+wp8+wpa81\Substitute.xml" DestinationFolder="$(SolutionDir)NuGetBuild\lib\portable-net40+sl50+win+wpa81+wp80" />
     <Copy SourceFiles="$(SolutionDir)NuGet\Substitute.Fody.nuspec" DestinationFolder="$(SolutionDir)NuGetBuild" />
     <Copy SourceFiles="$(SolutionDir)Substitute.Fody\bin\$(ConfigurationName)\Substitute.Fody.dll" DestinationFolder="$(SolutionDir)NuGetBuild" />
     <Copy SourceFiles="$(SolutionDir)Substitute.Fody\bin\$(ConfigurationName)\Substitute.Fody.pdb" DestinationFolder="$(SolutionDir)NuGetBuild" />
