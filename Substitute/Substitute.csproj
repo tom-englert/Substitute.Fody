@@ -1,30 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <TargetFrameworks>netstandard1.0;portable40-net40+sl5+win8+wp8+wpa81</TargetFrameworks>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Substitute.snk</AssemblyOriginatorKeyFile>
     <CodeAnalysisRuleSet>..\Global.ruleset</CodeAnalysisRuleSet>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Tags>Netstandard</Tags>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Trademark.cs" Link="Trademark.cs" />
-    <Compile Include="..\Version.cs" Link="Version.cs" />
-  </ItemGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'portable40-net40+sl5+win8+wp8+wpa81'">
-    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Profile328</TargetFrameworkProfile>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)'=='portable40-net40+sl5+win8+wp8+wpa81'">
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
+    <PackageReference Include="FodyPackaging" Version="3.2.9" PrivateAssets="All"/>
+    <PackageReference Include="Fody" Version="3.2.9" PrivateAssets="None" />
   </ItemGroup>
 
 </Project>
