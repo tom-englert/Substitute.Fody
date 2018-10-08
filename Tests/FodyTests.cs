@@ -3,24 +3,24 @@ using System.Linq;
 
 using JetBrains.Annotations;
 
-using NUnit.Framework;
-
 using Tests;
+
+using Xunit;
 
 public class FodyTests
 {
-    [Test]
+    [Fact]
     public void Test1()
     {
         var assembly = WeaverHelper.Create("Test1/AssemblyToProcess").Assembly;
 
         var form = assembly.GetInstance("AssemblyToProcess.TestForm");
 
-        Assert.AreEqual("Form:MyResourceManager", form.Text);
-        Assert.AreEqual("Constant", form.Value);
+        Assert.Equal("Form:MyResourceManager", form.Text);
+        Assert.Equal("Constant", form.Value);
     }
 
-    [Test]
+    [Fact]
     public void Test1a()
     {
         var assembly = WeaverHelper.Create("Test1/AssemblyToProcess").Assembly;
@@ -28,30 +28,30 @@ public class FodyTests
         var target = assembly.GetInstance("AssemblyToProcess.UsageOfInterface");
         var expected = new[] { "A", "B", "C" };
 
-        Assert.IsTrue(expected.SequenceEqual((IEnumerable<string>)target.Explicit));
-        Assert.IsTrue(expected.SequenceEqual((IEnumerable<string>)target.Derived));
+        Assert.True(expected.SequenceEqual((IEnumerable<string>)target.Explicit));
+        Assert.True(expected.SequenceEqual((IEnumerable<string>)target.Derived));
     }
 
-    [Test]
+    [Fact]
     public void Test2()
     {
         var assembly = WeaverHelper.Create("Test2/AssemblyToProcess").Assembly;
 
         var form = assembly.GetInstance("AssemblyToProcess.TestForm");
 
-        Assert.AreEqual("Form:MyResourceManager", form.Text);
-        Assert.AreEqual("$this.Text=>MyResourceManager", form.Value);
+        Assert.Equal("Form:MyResourceManager", form.Text);
+        Assert.Equal("$this.Text=>MyResourceManager", form.Value);
     }
 
-    [Test]
+    [Fact]
     public void Test3()
     {
         var assembly = WeaverHelper.Create("Test3/AssemblyToProcess").Assembly;
 
         var form = assembly.GetInstance("AssemblyToProcess.TestForm");
 
-        Assert.AreEqual("Form:MyResourceManager", form.Text);
-        Assert.AreEqual("MyForm", form.Value);
+        Assert.Equal("Form:MyResourceManager", form.Text);
+        Assert.Equal("MyForm", form.Value);
     }
 
     const string expectedError4 = @"System.ComponentModel.ComponentResourceManager => AssemblyToProcess.MyResourceManager substitution error. System.ComponentModel.ComponentResourceManager derives from System.Resources.ResourceManager, but there is no direct or substituted counterpart for System.Resources.ResourceManager in the targets base classes.
@@ -63,15 +63,16 @@ Either derive AssemblyToProcess.MyResourceManager from System.Resources.Resource
 
     const string expectedError7 = @"AssemblyToProcess.SubstituteWithExplicitInterfaces is both source and target of a substitution.";
 
-    [TestCase("Test4", expectedError4)]
-    [TestCase("Test5", expectedError5)]
-    [TestCase("Test6", expectedError6)]
-    [TestCase("Test7", expectedError7)]
+    [Theory]
+    [InlineData("Test4", expectedError4)]
+    [InlineData("Test5", expectedError5)]
+    [InlineData("Test6", expectedError6)]
+    [InlineData("Test7", expectedError7)]
     public void Test_Errors([NotNull] string test, [NotNull] string expectedError)
     {
         var weaverHelper = WeaverHelper.Create($"{test}/AssemblyToProcess");
 
-        Assert.AreEqual(1, weaverHelper.Errors.Count);
-        Assert.AreEqual(expectedError, weaverHelper.Errors[0]);
+        Assert.Equal(1, weaverHelper.Errors.Count());
+        Assert.Equal(expectedError, weaverHelper.Errors.First());
     }
 }

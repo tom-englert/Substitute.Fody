@@ -4,8 +4,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 
 using JetBrains.Annotations;
-
-using NUnit.Framework;
+using Xunit;
 
 public static class Verifier
 {
@@ -14,7 +13,7 @@ public static class Verifier
         var before = Validate(beforeAssemblyPath);
         var after = Validate(afterAssemblyPath);
         var message = $"Failed processing {Path.GetFileName(afterAssemblyPath)}\r\n{after}";
-        Assert.AreEqual(TrimLineNumbers(before), TrimLineNumbers(after), message);
+        Assert.Equal(TrimLineNumbers(before), TrimLineNumbers(after));
     }
 
     [NotNull]
