@@ -5,7 +5,6 @@
     <DisableFody>true</DisableFody>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AssemblyToProcess\MultiBuild.csproj" />
     <ProjectReference Include="..\Substitute.Fody\Substitute.Fody.csproj" />
   </ItemGroup>
   <ItemGroup>
