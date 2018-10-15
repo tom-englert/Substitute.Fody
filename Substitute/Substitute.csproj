@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.0;portable40-net40+sl5+win8+wp8+wpa81</TargetFrameworks>
+    <TargetFrameworks>net40-client;netstandard1.0;portable40-net40+sl5+win8+wp8+wpa81</TargetFrameworks>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Substitute.snk</AssemblyOriginatorKeyFile>
     <CodeAnalysisRuleSet>..\Global.ruleset</CodeAnalysisRuleSet>
