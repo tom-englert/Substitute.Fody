@@ -6,7 +6,7 @@
     <Company>tom-englert.de</Company>
     <Copyright>Copyright © tom-englert.de 2017-2018. Distributed under the MIT License.</Copyright>
     <Product>Substitute.Fody</Product>
-    <Version>1.2</Version>
+    <Version>1.3</Version>
     <PackageTags>ILWeaving, Fody, Cecil, Substitute</PackageTags>
     <Description>Substitute types with other types to e.g. intercept generated code.</Description>
     <PackageLicenseUrl>https://raw.github.com/tom-englert/Substitute.Fody/master/LICENSE</PackageLicenseUrl>
