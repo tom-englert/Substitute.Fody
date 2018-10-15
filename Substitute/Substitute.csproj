@@ -12,5 +12,9 @@
     <PackageReference Include="FodyPackaging" Version="3.2.9" PrivateAssets="All"/>
     <PackageReference Include="Fody" Version="3.2.9" PrivateAssets="None" />
   </ItemGroup>
+  
+  <Target Name="ClearDeploy" BeforeTargets="Pack">
+    <RemoveDir Directories="$(PackageOutputPath)" />
+  </Target>
 
 </Project>
