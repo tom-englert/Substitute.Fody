@@ -9,13 +9,15 @@ using Mono.Cecil.Cil;
 
 namespace Substitute
 {
+    using ISubstitutionMap = IReadOnlyDictionary<TypeReference, SubstitutionTarget>;
+
     internal static class WeaverExtensions
     {
-        internal static void Weave([NotNull] this ModuleDefinition moduleDefinition, [NotNull] ILogger logger)
+        internal static void Weave([NotNull] this ModuleDefinition moduleDefinition, [NotNull] ILogger logger, Parameters defaultParameters)
         {
             try
             {
-                new Weaver(moduleDefinition).Weave();
+                new Weaver(moduleDefinition, defaultParameters).Weave();
             }
             catch (WeavingException ex)
             {
@@ -30,18 +32,19 @@ namespace Substitute
             [NotNull, ItemNotNull]
             private readonly HashSet<TypeReference> _validatedTypes = new HashSet<TypeReference>(TypeReferenceEqualityComparer.Default);
             [NotNull]
-            private readonly IDictionary<TypeReference, TypeDefinition> _substitutionMap;
-            [NotNull, ItemNotNull]
-            private readonly HashSet<TypeReference> _substitutes;
+            private readonly IReadOnlyDictionary<TypeReference, SubstitutionTarget> _substitutionMap;
             [NotNull]
             private readonly IDictionary<TypeReference, Exception> _unmappedTypeErrors;
+            private readonly Parameters _defaultParameters;
 
-            public Weaver([NotNull] ModuleDefinition moduleDefinition)
+            public Weaver([NotNull] ModuleDefinition moduleDefinition, Parameters defaultParameters)
             {
                 _moduleDefinition = moduleDefinition;
-                _substitutionMap = moduleDefinition.CreateSubstitutionMap();
-                _substitutes = new HashSet<TypeReference>(_substitutionMap.Values, TypeReferenceEqualityComparer.Default);
-                _substitutionMap.CheckRecursions(_substitutes);
+                _defaultParameters = defaultParameters;
+                var assemblySubstitutionMap = moduleDefinition.Assembly.CreateSubstitutionMap(defaultParameters);
+                _substitutionMap = moduleDefinition.CreateSubstitutionMap(defaultParameters, assemblySubstitutionMap);
+                var substitutes = new HashSet<TypeReference>(_substitutionMap.Values.Select(t => t.TargetType));
+                _substitutionMap.CheckRecursions(substitutes);
 
                 _unmappedTypeErrors = _substitutionMap.GetUnmappedTypeErrors();
             }
@@ -49,126 +52,186 @@ namespace Substitute
             internal void Weave()
             {
                 // ReSharper disable once PossibleNullReferenceException
-                foreach (var type in _moduleDefinition.GetTypes())
+                foreach (var type in _moduleDefinition.Types)
+                    SubstituteType(type, _substitutionMap);
+            }
+
+            private void SubstituteType([NotNull] TypeDefinition typeDef, [NotNull] ISubstitutionMap substitutionMap)
+            {
+                var typeSubstitution = typeDef.CreateSubstitutionMap(_defaultParameters, substitutionMap);
+                var substitutes = CheckRecursion(typeSubstitution);
+
+                // avoid recursions...
+                if (typeSubstitution.ContainsKey(typeDef) || substitutes.Contains(typeDef))
+                    return;
+
+                if (typeDef.HasGenericParameters)
+                    foreach (var genericParameter in typeDef.GenericParameters)
+                        SubstituteSignature(genericParameter.Constraints, typeSubstitution);
+
+                if (typeDef.HasFields)
+                    foreach (var field in typeDef.Fields)
+                        SubstituteField(field, typeSubstitution);
+
+                var propertyMethods = new HashSet<MethodDefinition>();
+                if (typeDef.HasProperties)
+                    foreach (var property in typeDef.Properties)
+                    {
+                        SubstituteProperty(property, typeSubstitution);
+                        if (property.GetMethod != null)
+                            propertyMethods.Add(property.GetMethod);
+                        if (property.SetMethod != null)
+                            propertyMethods.Add(property.SetMethod);
+                        if (property.HasOtherMethods)
+                            propertyMethods.UnionWith(property.OtherMethods);
+
+                    }
+
+                if (typeDef.HasMethods)
+                    foreach (var method in typeDef.Methods.Where(m => !propertyMethods.Contains(m)))
+                        SubstituteMethod(method, typeSubstitution);
+
+                if (typeDef.HasNestedTypes)
+                    foreach (var nestedType in typeDef.NestedTypes)
+                        SubstituteType(nestedType, typeSubstitution);
+            }
+
+            private static ISet<TypeReference> CheckRecursion(ISubstitutionMap substitutionMap)
+            {
+                var substitutes = new HashSet<TypeReference>(substitutionMap.Values.Select(t => t.TargetType));
+                substitutionMap.CheckRecursions(substitutes);
+                return substitutes;
+            }
+
+            private void SubstituteField([NotNull] FieldDefinition fieldDef, [NotNull] ISubstitutionMap substitutionMap)
+            {
+                var fieldSubstitutionMap = fieldDef.CreateSubstitutionMap(_defaultParameters, substitutionMap);
+                if (!ReferenceEquals(substitutionMap, fieldSubstitutionMap))
+                    CheckRecursion(fieldSubstitutionMap);
+
+                fieldDef.FieldType = SubstituteSignature(fieldDef.FieldType, fieldSubstitutionMap);
+            }
+
+            private void SubstituteProperty([NotNull] PropertyDefinition propertyDef, [NotNull] ISubstitutionMap substitutionMap)
+            {
+                var propertySubstitutionMap = propertyDef.CreateSubstitutionMap(_defaultParameters, substitutionMap);
+                if (!ReferenceEquals(substitutionMap, propertySubstitutionMap))
+                    CheckRecursion(propertySubstitutionMap);
+
+                propertyDef.PropertyType = SubstituteSignature(propertyDef.PropertyType, propertySubstitutionMap);
+
+                if (propertyDef.GetMethod != null)
+                    SubstituteMethod(propertyDef.GetMethod, propertySubstitutionMap);
+                if (propertyDef.SetMethod != null)
+                    SubstituteMethod(propertyDef.SetMethod, propertySubstitutionMap);
+                if (propertyDef.HasOtherMethods)
+                    foreach (var otherMethod in propertyDef.OtherMethods)
+                        SubstituteMethod(otherMethod, propertySubstitutionMap);
+            }
+
+            private void SubstituteMethod([NotNull] MethodDefinition methodDef, [NotNull] ISubstitutionMap substitutionMap)
+            {
+                var methodSubstitutionMap = methodDef.CreateSubstitutionMap(_defaultParameters, substitutionMap);
+                if (!ReferenceEquals(substitutionMap, methodSubstitutionMap))
+                    CheckRecursion(methodSubstitutionMap);
+
+                foreach (var genericParameter in methodDef.GenericParameters)
+                    SubstituteSignature(genericParameter.Constraints, methodSubstitutionMap);
+
+                methodDef.ReturnType = SubstituteSignature(methodDef.ReturnType, methodSubstitutionMap);
+
+                if (methodDef.HasBody)
                 {
-                    // avoid recursions...
-                    if (_substitutionMap.ContainsKey(type) || _substitutes.Contains(type))
-                        continue;
+                    if (methodDef.Body.HasVariables)
+                        foreach (var variable in methodDef.Body.Variables)
+                            variable.VariableType = Substitute(variable.VariableType, methodSubstitutionMap);
 
-                    foreach (var genericParameter in type.GenericParameters)
+                    foreach (var instr in methodDef.Body.Instructions)
                     {
-                        genericParameter.Constraints.ReplaceItems(GetSubstitute);
-                    }
-
-                    foreach (var field in type.Fields)
-                    {
-                        field.FieldType = GetSubstitute(field.FieldType);
-                    }
-
-                    foreach (var property in type.Properties)
-                    {
-                        property.PropertyType = GetSubstitute(property.PropertyType);
-                    }
-
-                    foreach (var method in type.Methods)
-                    {
-                        foreach (var genericParameter in method.GenericParameters)
+                        if (instr.Operand != null)
                         {
-                            genericParameter.Constraints.ReplaceItems(GetSubstitute);
-                        }
-
-                        method.ReturnType = GetSubstitute(method.ReturnType);
-
-                        var methodBody = method.Body;
-
-                        if (methodBody == null)
-                            continue;
-
-                        foreach (var variable in methodBody.Variables)
-                        {
-                            variable.VariableType = GetSubstitute(variable.VariableType);
-                        }
-
-                        var instructions = methodBody.Instructions;
-
-                        for (var i = 0; i < instructions.Count; i++)
-                        {
-                            var inst = instructions[i];
-                            if (inst.Operand is TypeReference operandType)
+                            switch (instr.Operand)
                             {
-                                if (TryGetSubstitute(operandType, out var substitute))
-                                {
-                                    instructions[i] = Instruction.Create(inst.OpCode, substitute);
-                                }
-                            }
-                            else if (inst.Operand is MethodReference operandMethod)
-                            {
-                                if (TryGetSubstitute(operandMethod.DeclaringType, out var substitute))
-                                {
-                                    instructions[i] = Instruction.Create(inst.OpCode, Find(substitute, operandMethod.Resolve()));
-                                }
-                            }
-                            else if (inst.Operand is FieldReference operandField)
-                            {
-                                if (TryGetSubstitute(operandField.DeclaringType, out var substitute))
-                                {
-                                    instructions[i] = Instruction.Create(inst.OpCode, Find(substitute, operandField.Resolve()));
-                                }
+                                case TypeReference typeRef:
+                                    instr.Operand = Substitute(typeRef, methodSubstitutionMap);
+                                    break;
+                                case MethodReference methodRef:
+                                    {
+                                        if (TrySubstitute(methodRef.DeclaringType, methodSubstitutionMap, out var substituted))
+                                            instr.Operand = Find(substituted.ResolveStrict(), methodRef.Resolve());
+                                        break;
+                                    }
+                                case FieldReference fieldRef:
+                                    {
+                                        if (TrySubstitute(fieldRef.DeclaringType, methodSubstitutionMap, out var substituted))
+                                            instr.Operand = Find(substituted.ResolveStrict(), fieldRef.Resolve());
+                                    }
+                                    break;
                             }
                         }
                     }
                 }
             }
 
-            [NotNull]
-            private TypeReference GetSubstitute([NotNull] TypeReference type)
+            private void SubstituteSignature([NotNull, ItemNotNull] IList<TypeReference> typeRefs, [NotNull] ISubstitutionMap substitutionMap)
             {
-                if (_substitutionMap.TryGetValue(type, out var substitute))
+                for (var i = 0; i < typeRefs.Count; i++)
+                    if (TrySubstituteSignature(typeRefs[i], substitutionMap, out var substituted))
+                        typeRefs[i] = substituted;
+            }
+
+            private TypeReference SubstituteSignature([NotNull] TypeReference typeRef, [NotNull] ISubstitutionMap substitutionMap) =>
+                TrySubstituteSignature(typeRef, substitutionMap, out var substituted) ? substituted : typeRef;
+
+            private bool TrySubstituteSignature([NotNull] TypeReference typeRef, [NotNull] ISubstitutionMap substitutionMap, out TypeReference substituted) =>
+                TrySubstitute(typeRef, substitutionMap, subst => !subst.Parameters.DoNotChangeSignature, out substituted);
+
+            private TypeReference Substitute([NotNull] TypeReference typeRef, [NotNull] ISubstitutionMap substitutionMap) =>
+                TrySubstitute(typeRef, substitutionMap, out var substituted) ? substituted : typeRef;
+
+            private bool TrySubstitute([NotNull] TypeReference typeRef, [NotNull] ISubstitutionMap substitutionMap, out TypeReference substituted) =>
+                TrySubstitute(typeRef, substitutionMap, subst => true, out substituted);
+
+            [NotNull]
+            private bool TrySubstitute([NotNull] TypeReference typeRef, [NotNull] ISubstitutionMap substitutionMap, [NotNull] Func<SubstitutionTarget, bool> doSubstitution, out TypeReference substituted)
+            {
+                if (substitutionMap.TryGetValue(typeRef, out var substitute))
                 {
                     // ReSharper disable once AssignNullToNotNullAttribute
-                    return _moduleDefinition.ImportReference(substitute);
+                    if (doSubstitution.Invoke(substitute))
+                    {
+                        substituted = _moduleDefinition.ImportReference(substitute.TargetType);
+                        return true;
+                    }
                 }
 
-                if (type is GenericInstanceType genericType)
+                if (typeRef is GenericInstanceType genericType)
                 {
                     // ReSharper disable once AssignNullToNotNullAttribute
-                    genericType.GenericArguments.ReplaceItems(GetSubstitute);
+                    for (var i = 0; i < genericType.GenericArguments.Count; i++)
+                    {
+                        if (TrySubstitute(genericType.GenericArguments[i], substitutionMap, doSubstitution, out var substitutedGeneric))
+                            genericType.GenericArguments[i] = substitutedGeneric;
+                    }
                 }
 
                 // ReSharper disable once PossibleNullReferenceException
-                foreach (var genericParameter in type.GenericParameters)
-                {
-                    // ReSharper disable once AssignNullToNotNullAttribute
-                    // ReSharper disable once PossibleNullReferenceException
-                    genericParameter.Constraints.ReplaceItems(GetSubstitute);
-                }
+                foreach (var genericParameter in typeRef.GenericParameters)
+                    SubstituteSignature(genericParameter, substitutionMap);
 
-                if (_validatedTypes.Add(type))
+                if (_validatedTypes.Add(typeRef))
                 {
-                    if (_unmappedTypeErrors.TryGetValue(type, out var error))
+                    if (_unmappedTypeErrors.TryGetValue(typeRef, out var error))
                         throw error;
 
-                    var substitutedBaseType = type.GetBaseTypes().FirstOrDefault(baseType => _substitutionMap.ContainsKey(baseType));
+                    var substitutedBaseType = typeRef.GetBaseTypes().FirstOrDefault(baseType => _substitutionMap.ContainsKey(baseType));
 
                     if (substitutedBaseType != null)
-                        throw new WeavingException($"{type} is not substituted, but is derived from the substituted type {substitutedBaseType}. You must substitute {type}, too.", type);
+                        throw new WeavingException($"{typeRef} is not substituted, but is derived from the substituted type {substitutedBaseType}. You must substitute {typeRef}, too.", typeRef);
                 }
 
-                return type;
-            }
-
-            [ContractAnnotation("substitute:null => false")]
-            private bool TryGetSubstitute([NotNull] TypeReference type, [CanBeNull] out TypeDefinition substitute)
-            {
-                var t = GetSubstitute(type);
-                substitute = null;
-
-                if (t != type)
-                {
-                    substitute = t.Resolve();
-                }
-
-                return substitute != null;
+                substituted = null;
+                return false;
             }
 
             [NotNull]

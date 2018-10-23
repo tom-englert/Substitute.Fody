@@ -7,24 +7,22 @@ using Mono.Cecil;
 
 namespace Substitute
 {
-    internal class TypeReferenceEqualityComparer : IEqualityComparer<TypeReference>
+    internal sealed class TypeReferenceEqualityComparer : IEqualityComparer<TypeReference>
     {
         private TypeReferenceEqualityComparer()
         {
         }
 
         [NotNull]
-        public static IEqualityComparer<TypeReference> Default { get; } = new TypeReferenceEqualityComparer();
+        internal static IEqualityComparer<TypeReference> Default { get; } = new TypeReferenceEqualityComparer();
 
-        public bool Equals(TypeReference x, TypeReference y)
-        {
-            return GetKey(x) == GetKey(y);
-        }
+        internal static bool Equals([CanBeNull] TypeReference x, [CanBeNull] TypeReference y) => Default.Equals(x, y);
 
-        public int GetHashCode([CanBeNull] TypeReference obj)
-        {
-            return GetKey(obj)?.GetHashCode() ?? 0;
-        }
+        internal static int GetHashCode([CanBeNull] TypeReference obj) => Default.GetHashCode(obj);
+
+        bool IEqualityComparer<TypeReference>.Equals(TypeReference x, TypeReference y) => GetKey(x) == GetKey(y);
+
+        int IEqualityComparer<TypeReference>.GetHashCode([CanBeNull] TypeReference obj) => GetKey(obj)?.GetHashCode() ?? 0;
 
         [CanBeNull]
         private static string GetKey([CanBeNull] TypeReference obj)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
-
+using System.Text;
 using JetBrains.Annotations;
 
 using Mono.Cecil;
@@ -14,37 +14,77 @@ namespace Substitute
     internal static class ExtensionMethods
     {
         [NotNull]
-        public static IDictionary<TypeReference, TypeDefinition> CreateSubstitutionMap([NotNull] this ModuleDefinition moduleDefinition)
-            => moduleDefinition.GetTypeMappings()
-                .VerfifyNoDuplicates()
-                .ToDictionary(item => item.Key, item => item.Value, TypeReferenceEqualityComparer.Default);
+        public static IReadOnlyDictionary<TypeReference, SubstitutionTarget> CreateSubstitutionMap([NotNull] this ICustomAttributeProvider attributeProvider, Parameters defaultParameters)
+            => attributeProvider.CreateSubstitutionMap(defaultParameters, new Dictionary<TypeReference, SubstitutionTarget>(TypeReferenceEqualityComparer.Default));
 
         [NotNull]
-        private static IList<KeyValuePair<TypeReference, TypeDefinition>> VerfifyNoDuplicates([NotNull] this IList<KeyValuePair<TypeReference, TypeDefinition>> typeMappings)
-        {
-            var duplicateDefinition = typeMappings
-                .GroupBy(item => item.Key, TypeReferenceEqualityComparer.Default)
-                // ReSharper disable once AssignNullToNotNullAttribute
-                .Where(group => @group.Count() > 1)
-                .Select(group => @group.Key)
-                .FirstOrDefault();
-
-            if (duplicateDefinition != null)
-                throw new WeavingException($"Duplicate substitution mapping for type {duplicateDefinition}.", duplicateDefinition);
-
-            return typeMappings;
-        }
+        public static IReadOnlyDictionary<TypeReference, SubstitutionTarget> CreateSubstitutionMap([NotNull] this ICustomAttributeProvider attributeProvider, Parameters defaultParameters, [NotNull] IReadOnlyDictionary<TypeReference, SubstitutionTarget> parentDefinitions)
+            => attributeProvider.GetTypeMappings(defaultParameters, parentDefinitions);
 
         [NotNull]
         [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute"), SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        private static IList<KeyValuePair<TypeReference, TypeDefinition>> GetTypeMappings([NotNull] this ModuleDefinition moduleDefinition)
+        private static IReadOnlyDictionary<TypeReference, SubstitutionTarget> GetTypeMappings([NotNull] this ICustomAttributeProvider attributeProvider, Parameters defaultParameters, [NotNull] IReadOnlyDictionary<TypeReference, SubstitutionTarget> parentDefinitions)
         {
-            return moduleDefinition.Assembly.CustomAttributes
+            // Defer creation of the new dictionary until it is required.
+            // In case there are no new mappings, we can use the instance that contains the parent attributes.
+            Dictionary<TypeReference, SubstitutionTarget> newMappings = null;
+            HashSet<TypeReference> duplicates = null;
+
+            var customAttributes = attributeProvider.CustomAttributes
                 .Where(ca => ca.AttributeType?.FullName == "Substitute.SubstituteAttribute")
                 .Where(attr => attr.ConstructorArguments.Count == 2)
-                .Where(attr => attr.ConstructorArguments.All(ca => ca.Type.FullName == "System.Type"))
-                .Select(attr => new KeyValuePair<TypeReference, TypeDefinition>((TypeReference)attr.ConstructorArguments[0].Value, moduleDefinition.ImportReference((TypeReference)attr.ConstructorArguments[1].Value).ResolveStrict()))
-                .ToArray();
+                .Where(attr => attr.ConstructorArguments.All(ca => ca.Type.FullName == "System.Type"));
+
+            foreach (var customAttribute in customAttributes)
+            {
+                newMappings = newMappings ?? parentDefinitions.ToDictionary(TypeReferenceEqualityComparer.Default);
+                duplicates = duplicates ?? new HashSet<TypeReference>(TypeReferenceEqualityComparer.Default);
+
+                var sourceType = (TypeReference)customAttribute.ConstructorArguments[0].Value;
+                var targetType = ((TypeReference)customAttribute.ConstructorArguments[1].Value).ResolveStrict();
+
+                if (!duplicates.Add(sourceType))
+                    throw new WeavingException($"Duplicate substitution mapping for type {sourceType}.", sourceType);
+
+                var currentParameters = defaultParameters;
+                var isDisable = false;
+                foreach (var prop in customAttribute.Properties)
+                {
+                    if (prop.Name == "Disable")
+                        isDisable = (bool)prop.Argument.Value;
+
+                    if (prop.Name == "DoNotChangeSignature")
+                    {
+                        var value = (bool?)prop.Argument.Value;
+                        if (value.HasValue)
+                            currentParameters._DoNotChangeSignature = value;
+                    }
+
+                    if (prop.Name == "KeepBaseMemberSignature")
+                    {
+                        var value = (bool?)prop.Argument.Value;
+                        if (value.HasValue)
+                            currentParameters._DoNotChangeSignature = value;
+                    }
+                }
+
+                if (isDisable)
+                    newMappings.Remove(sourceType);
+                else
+                {
+                    if ((newMappings ?? parentDefinitions).ContainsKey(sourceType))
+                    {
+                        var currentTarget = (newMappings ?? parentDefinitions)[sourceType];
+                        var newTarget = new SubstitutionTarget(targetType, currentTarget.Parameters.Apply(currentParameters));
+                        if (!currentTarget.Equals(newTarget))
+                            newMappings[sourceType] = newTarget;
+                    }
+                    else
+                        newMappings.Add(sourceType, new SubstitutionTarget(targetType, currentParameters));
+                }
+            }
+
+            return newMappings ?? parentDefinitions;
         }
 
 
@@ -110,7 +150,7 @@ namespace Substitute
         }
 
         [NotNull]
-        public static IDictionary<TypeReference, Exception> GetUnmappedTypeErrors([NotNull] this IDictionary<TypeReference, TypeDefinition> substitutionMap)
+        public static IDictionary<TypeReference, Exception> GetUnmappedTypeErrors([NotNull] this IReadOnlyDictionary<TypeReference, SubstitutionTarget> substitutionMap)
         {
             var invalidTypes = new Dictionary<TypeReference, Exception>(TypeReferenceEqualityComparer.Default);
 
@@ -125,15 +165,15 @@ namespace Substitute
                 // TODO: interfaces implemented by base classes?
                 // ReSharper disable AssignNullToNotNullAttribute
                 // ReSharper disable PossibleNullReferenceException
-                var targetInterfaces = new HashSet<TypeReference>(target.GetAllInterfaces(), TypeReferenceEqualityComparer.Default);
+                var targetInterfaces = new HashSet<TypeReference>(target.TargetType.GetAllInterfaces(), TypeReferenceEqualityComparer.Default);
                 var sourceInterfaces = source.GetAllInterfaces();
 
                 if (!sourceInterfaces.All(t => targetInterfaces.Contains(t)))
-                    throw new WeavingException($@"{source} => {target} substitution error. Target must implement the same interfaces as source.", target);
+                    throw new WeavingException($@"{source} => {target.TargetType} substitution error. Target must implement the same interfaces as source.", target.TargetType);
                 // ReSharper restore AssignNullToNotNullAttribute
                 // ReSharper restore PossibleNullReferenceException
 
-                var targetAndBases = target.GetSelfAndBaseTypes()
+                var targetAndBases = target.TargetType.GetSelfAndBaseTypes()
                     .Select((reference, index) => new { reference, index })
                     .ToDictionary(item => item.reference, item => item.index, TypeReferenceEqualityComparer.Default);
 
@@ -148,25 +188,25 @@ namespace Substitute
                     if (targetAndBases.TryGetValue(sourceBase, out var index))
                     {
                         if (index <= lastTargetIndex)
-                            throw new WeavingException($@"{source} => {target} substitution error. There is a cross-mapping in the type hierarchies.", target);
+                            throw new WeavingException($@"{source} => {target.TargetType} substitution error. There is a cross-mapping in the type hierarchies.", target.TargetType);
 
                         lastTargetIndex = index;
                         continue;
                     }
 
-                    if (substitutionMap.TryGetValue(sourceBase, out var targetBase) && targetAndBases.TryGetValue(targetBase, out index))
+                    if (substitutionMap.TryGetValue(sourceBase, out var targetBase) && targetAndBases.TryGetValue(targetBase.TargetType, out index))
                     {
                         if (index < lastTargetIndex)
-                            throw new WeavingException($@"{source} => {target} substitution error. There is a cross-mapping in the type hierarchies.", target);
+                            throw new WeavingException($@"{source} => {target.TargetType} substitution error. There is a cross-mapping in the type hierarchies.", target.TargetType);
 
                         lastTargetIndex = index;
                         continue;
                     }
 
                     invalidTypes[sourceBase] = new WeavingException(
-$@"{source} => {target} substitution error. {source} derives from {sourceBase}, but there is no direct or substituted counterpart for {sourceBase} in the targets base classes.
-Either derive {target} from {sourceBase}, or substitute {sourceBase} with {target} or one of it's base classes."
-                        , target);
+$@"{source} => {target.TargetType} substitution error. {source} derives from {sourceBase}, but there is no direct or substituted counterpart for {sourceBase} in the targets base classes.
+Either derive {target.TargetType} from {sourceBase}, or substitute {sourceBase} with {target.TargetType} or one of it's base classes."
+                        , target.TargetType);
                 }
             }
 
@@ -183,7 +223,7 @@ Either derive {target} from {sourceBase}, or substitute {sourceBase} with {targe
             return method == null ? null : definition.Module?.SymbolReader?.Read(method)?.SequencePoints?.FirstOrDefault();
         }
 
-        public static void CheckRecursions([NotNull] this IDictionary<TypeReference, TypeDefinition> substitutionMap, [NotNull, ItemNotNull] HashSet<TypeReference> substitutes)
+        public static void CheckRecursions([NotNull] this IReadOnlyDictionary<TypeReference, SubstitutionTarget> substitutionMap, [NotNull, ItemNotNull] HashSet<TypeReference> substitutes)
         {
             var recursion = substitutionMap.Keys.FirstOrDefault(substitutes.Contains);
 
@@ -195,6 +235,16 @@ Either derive {target} from {sourceBase}, or substitute {sourceBase} with {targe
         public static TypeDefinition ResolveStrict([NotNull] this TypeReference reference)
         {
             return reference.Resolve() ?? throw new WeavingException($"Unable to resolve type {reference}", reference);
+        }
+
+        private static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>([NotNull] this IReadOnlyDictionary<TKey, TValue> source, IEqualityComparer<TKey> comparer)
+        {
+            var result = new Dictionary<TKey, TValue>(source.Count, comparer);
+
+            foreach (var kvp in source)
+                result.Add(kvp.Key, kvp.Value);
+
+            return result;
         }
     }
 }

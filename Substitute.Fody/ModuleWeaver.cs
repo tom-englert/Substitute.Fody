@@ -15,7 +15,7 @@ namespace Substitute
     {
         public override void Execute()
         {
-            ModuleDefinition.Weave(this);
+            ModuleDefinition.Weave(this, Parameters.GetFromConfig(Config));
             ModuleDefinition.RemoveReferences(this);
         }
 
