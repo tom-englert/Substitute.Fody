@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="PartialSubstitution.cs" />
     <Compile Include="TestForm.cs">
       <SubType>Form</SubType>
     </Compile>

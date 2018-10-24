@@ -33,6 +33,17 @@ public class FodyTests
     }
 
     [Fact]
+    public void Test1Partial()
+    {
+        var assembly = WeaverHelper.Create("Test1/AssemblyToProcess").Assembly;
+
+        var target = assembly.GetInstance("AssemblyToProcess.SubstitutionSubjectClass");
+
+        Assert.Equal("\"Test\"", target.GetText());
+        Assert.Equal("Test", target.GetOriginalText());
+    }
+
+    [Fact]
     public void Test2()
     {
         var assembly = WeaverHelper.Create("Test2/AssemblyToProcess").Assembly;

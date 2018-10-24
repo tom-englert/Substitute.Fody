@@ -30,13 +30,13 @@ namespace Substitute
         /// If this option is enabled, the substitution will only be applied to the method bodies,
         /// but not to any signature.
         /// </summary>
-        public bool? DoNotChangeSignature { get; set; }
+        public bool DoNotChangeSignature { get; set; }
 
         /// <summary>
         /// If this option is enabled, the signatures of a member overwriting another member that is not subject to the
         /// substitution, will be kept.
         /// </summary>
-        public bool? KeepBaseMemberSignature { get; set; }
+        public bool KeepBaseMemberSignature { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SubstituteAttribute"/> class.

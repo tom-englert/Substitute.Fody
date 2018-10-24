@@ -54,18 +54,10 @@ namespace Substitute
                         isDisable = (bool)prop.Argument.Value;
 
                     if (prop.Name == "DoNotChangeSignature")
-                    {
-                        var value = (bool?)prop.Argument.Value;
-                        if (value.HasValue)
-                            currentParameters._DoNotChangeSignature = value;
-                    }
+                        currentParameters._DoNotChangeSignature = (bool)prop.Argument.Value;
 
                     if (prop.Name == "KeepBaseMemberSignature")
-                    {
-                        var value = (bool?)prop.Argument.Value;
-                        if (value.HasValue)
-                            currentParameters._DoNotChangeSignature = value;
-                    }
+                        currentParameters._KeepBaseMemberSignature = (bool)prop.Argument.Value;
                 }
 
                 if (isDisable)
