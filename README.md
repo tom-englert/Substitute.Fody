@@ -88,7 +88,7 @@ private void InitializeComponent()
 #endregion
 ```
 
-##### The designer generated code after compilation:
+##### The designer generated code after weaving:
 
 ```csharp
 #region Windows Form Designer generated code
