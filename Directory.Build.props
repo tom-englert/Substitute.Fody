@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Copyright>Copyright © tom-englert.de 2017-2018. Distributed under the MIT License.</Copyright>
     <Product>Substitute.Fody</Product>
-    <Version>1.3</Version>
+    <Version>1.4</Version>
     <Description>Substitute types with other types to e.g. intercept generated code.</Description>
   </PropertyGroup>
 
