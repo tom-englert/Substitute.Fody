@@ -1,17 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
-    <AssemblyOriginatorKeyFile>..\key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="FodyHelpers" Version="3.2.9">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="FodyHelpers" Version="3.2.16" />
   </ItemGroup>
-  <Target Name="Postbuild" AfterTargets="Build" Condition="$(TargetFramework)=='net46'">
-    <MakeDir Directories="$(SolutionDir)Tools" />
-    <Copy SourceFiles="$(TargetDir)$(ProjectName).dll" DestinationFolder="$(SolutionDir)Tools" />
-    <Copy SourceFiles="$(TargetDir)$(ProjectName).pdb" DestinationFolder="$(SolutionDir)Tools" />
-  </Target>
+
 </Project>
