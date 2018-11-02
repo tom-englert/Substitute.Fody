@@ -7,8 +7,6 @@ using System.Windows.Forms;
 
 using AssemblyToProcess;
 
-using JetBrains.Annotations;
-
 using Substitute;
 
 
@@ -24,7 +22,6 @@ namespace AssemblyToProcess
         public string Value { get; }
 
 #if ACCESS_BASE
-        [NotNull]
         public System.ComponentModel.ComponentResourceManager Resources { get; } = new System.ComponentModel.ComponentResourceManager(typeof(TestForm));
 #endif
 
@@ -39,7 +36,7 @@ namespace AssemblyToProcess
         {
             public string Value { get; }
 
-            public MyClass([NotNull] TestForm owner)
+            public MyClass(TestForm owner)
             {
 #if ACCESS_BASE
                 Value = owner.Resources.GetString("$this.Text");
