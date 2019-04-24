@@ -1,6 +1,6 @@
 ### This is an add-in for [Fody](https://github.com/Fody/Fody/) [![Build status](https://ci.appveyor.com/api/projects/status/mu7g9vwg31oj1pey?svg=true)](https://ci.appveyor.com/project/tom-englert/substitute-fody) [![NuGet Status](http://img.shields.io/nuget/v/Substitute.Fody.svg?style=flat-square)](https://www.nuget.org/packages/Substitute.Fody)
 
-![Icon](Icons/package_icon.png)
+![Icon](package_icon.png)
 
 
 
