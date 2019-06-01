@@ -72,7 +72,7 @@ Either derive AssemblyToProcess.MyResourceManager from System.Resources.Resource
     {
         var weaverHelper = WeaverHelper.Create($"{test}/AssemblyToProcess");
 
-        Assert.Equal(1, weaverHelper.Errors.Count());
+        Assert.Single(weaverHelper.Errors);
         Assert.Equal(expectedError, weaverHelper.Errors.First());
     }
 }
