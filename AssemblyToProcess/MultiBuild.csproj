@@ -7,6 +7,7 @@
     <ProjectGuid>{B2C8028C-5BA6-4916-8AB3-A0ED95BE5FDA}</ProjectGuid>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <TargetFrameworkProfile />
+    <DisableFody>true</DisableFody>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' "/>

@@ -48,7 +48,6 @@ namespace Substitute
 
             internal void Weave()
             {
-                // ReSharper disable once PossibleNullReferenceException
                 foreach (var type in _moduleDefinition.GetTypes())
                 {
                     // avoid recursions...
@@ -57,7 +56,10 @@ namespace Substitute
 
                     foreach (var genericParameter in type.GenericParameters)
                     {
-                        genericParameter.Constraints.ReplaceItems(GetSubstitute);
+                        foreach (var constraint in genericParameter.Constraints)
+                        {
+                            constraint.ConstraintType = GetSubstitute(constraint.ConstraintType);
+                        }
                     }
 
                     foreach (var field in type.Fields)
@@ -74,7 +76,10 @@ namespace Substitute
                     {
                         foreach (var genericParameter in method.GenericParameters)
                         {
-                            genericParameter.Constraints.ReplaceItems(GetSubstitute);
+                            foreach (var constraint in genericParameter.Constraints)
+                            {
+                                constraint.ConstraintType = GetSubstitute(constraint.ConstraintType);
+                            }
                         }
 
                         method.ReturnType = GetSubstitute(method.ReturnType);
@@ -125,22 +130,20 @@ namespace Substitute
             {
                 if (_substitutionMap.TryGetValue(type, out var substitute))
                 {
-                    // ReSharper disable once AssignNullToNotNullAttribute
                     return _moduleDefinition.ImportReference(substitute);
                 }
 
                 if (type is GenericInstanceType genericType)
                 {
-                    // ReSharper disable once AssignNullToNotNullAttribute
                     genericType.GenericArguments.ReplaceItems(GetSubstitute);
                 }
 
-                // ReSharper disable once PossibleNullReferenceException
                 foreach (var genericParameter in type.GenericParameters)
                 {
-                    // ReSharper disable once AssignNullToNotNullAttribute
-                    // ReSharper disable once PossibleNullReferenceException
-                    genericParameter.Constraints.ReplaceItems(GetSubstitute);
+                    foreach (var constraint in genericParameter.Constraints)
+                    {
+                        constraint.ConstraintType = GetSubstitute(constraint.ConstraintType);
+                    }
                 }
 
                 if (_validatedTypes.Add(type))
@@ -188,7 +191,6 @@ namespace Substitute
                     throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because the method {signature} is private.", type);
                 }
 
-                // ReSharper disable once AssignNullToNotNullAttribute
                 return _moduleDefinition.ImportReference(newItem);
             }
 
@@ -209,7 +211,6 @@ namespace Substitute
                     throw new WeavingException($"The type {type} cannot substitute {template.DeclaringType}, because the field {signature} is private.", type);
                 }
 
-                // ReSharper disable once AssignNullToNotNullAttribute
                 return _moduleDefinition.ImportReference(newItem);
             }
         }
