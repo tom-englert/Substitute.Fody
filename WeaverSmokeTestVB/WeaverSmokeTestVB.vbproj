@@ -142,5 +142,8 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <WeaverFiles Include="$(SolutionDir)$(SolutionName)\bin\$(Configuration)\Net472\$(SolutionName).dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>

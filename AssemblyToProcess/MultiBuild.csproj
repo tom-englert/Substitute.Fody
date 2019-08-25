@@ -5,7 +5,7 @@
     <Prefer32Bit>false</Prefer32Bit>
     <OutputType>Library</OutputType>
     <ProjectGuid>{B2C8028C-5BA6-4916-8AB3-A0ED95BE5FDA}</ProjectGuid>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
 
@@ -49,7 +49,7 @@
 
   <Target Name="MultiBuild" Returns="%(MultiTarget.Identity)">
     <PropertyGroup>
-      <OutDir>$(ProjectDir)..\Tests\Bin\$(Configuration)\Net46\%(MultiTarget.Identity)\</OutDir>
+      <OutDir>$(ProjectDir)..\Tests\Bin\$(Configuration)\Net472\%(MultiTarget.Identity)\</OutDir>
       <DefineConstants>TRACE;%(MultiTarget.Defines)</DefineConstants>
       <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">DEBUG;$(DefineConstants)</DefineConstants>
       <IntermediateOutputPath>obj\$(Configuration)\%(MultiTarget.Identity)\</IntermediateOutputPath>
