@@ -14,6 +14,7 @@ namespace Substitute
         /// </summary>
         /// <param name="original">The original that will be substituted.</param>
         /// <param name="substituteWith">The type that will substitute the original.</param>
+#pragma warning disable IDE0060 // Remove unused parameter
         public SubstituteAttribute(Type original, Type substituteWith)
         {
         }

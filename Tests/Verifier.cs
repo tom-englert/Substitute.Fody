@@ -3,12 +3,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 
-using JetBrains.Annotations;
 using Xunit;
+
+// ReSharper disable UnusedVariable
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
 
 public static class Verifier
 {
-    public static void Verify([NotNull] string beforeAssemblyPath, [NotNull] string afterAssemblyPath)
+    public static void Verify(string beforeAssemblyPath, string afterAssemblyPath)
     {
         var before = Validate(beforeAssemblyPath);
         var after = Validate(afterAssemblyPath);
@@ -16,8 +18,7 @@ public static class Verifier
         Assert.Equal(TrimLineNumbers(before), TrimLineNumbers(after));
     }
 
-    [NotNull]
-    private static string Validate([NotNull] string assemblyPath2)
+    private static string Validate(string assemblyPath2)
     {
         var exePath = GetPathToPEVerify();
         if (!File.Exists(exePath))
@@ -37,7 +38,6 @@ public static class Verifier
         return process.StandardOutput.ReadToEnd().Trim().Replace(assemblyPath2, "");
     }
 
-    [NotNull]
     private static string GetPathToPEVerify()
     {
         var exePath = Environment.ExpandEnvironmentVariables(@"%programfiles(x86)%\Microsoft SDKs\Windows\v7.0A\Bin\NETFX 4.0 Tools\PEVerify.exe");
@@ -49,8 +49,7 @@ public static class Verifier
         return exePath;
     }
 
-    [NotNull]
-    private static string TrimLineNumbers([NotNull] string foo)
+    private static string TrimLineNumbers(string foo)
     {
         return Regex.Replace(foo, @"0x.*]", "");
     }

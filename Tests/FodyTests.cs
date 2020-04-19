@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-using JetBrains.Annotations;
-
 using Tests;
 
 using Xunit;
@@ -68,7 +66,7 @@ Either derive AssemblyToProcess.MyResourceManager from System.Resources.Resource
     [InlineData("Test5", expectedError5)]
     [InlineData("Test6", expectedError6)]
     [InlineData("Test7", expectedError7)]
-    public void Test_Errors([NotNull] string test, [NotNull] string expectedError)
+    public void Test_Errors(string test, string expectedError)
     {
         var weaverHelper = WeaverHelper.Create($"{test}/AssemblyToProcess");
 

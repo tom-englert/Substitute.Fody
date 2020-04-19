@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 using System.Resources;
-using System.Runtime.InteropServices;
+
 using Substitute;
+
 using WeaverSmokeTestCS;
 
 [assembly: AssemblyTitle("WeaverSmokeTestCS")]

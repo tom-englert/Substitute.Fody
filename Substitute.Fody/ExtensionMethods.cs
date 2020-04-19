@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using System.Linq;
-
-using JetBrains.Annotations;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -13,14 +10,12 @@ namespace Substitute
 {
     internal static class ExtensionMethods
     {
-        [NotNull]
-        public static IDictionary<TypeReference, TypeDefinition> CreateSubstitutionMap([NotNull] this ModuleDefinition moduleDefinition)
+        public static IDictionary<TypeReference, TypeDefinition> CreateSubstitutionMap(this ModuleDefinition moduleDefinition)
             => moduleDefinition.GetTypeMappings()
                 .VerfifyNoDuplicates()
                 .ToDictionary(item => item.Key, item => item.Value, TypeReferenceEqualityComparer.Default);
 
-        [NotNull]
-        private static IList<KeyValuePair<TypeReference, TypeDefinition>> VerfifyNoDuplicates([NotNull] this IList<KeyValuePair<TypeReference, TypeDefinition>> typeMappings)
+        private static IList<KeyValuePair<TypeReference, TypeDefinition>> VerfifyNoDuplicates(this IList<KeyValuePair<TypeReference, TypeDefinition>> typeMappings)
         {
             var duplicateDefinition = typeMappings
                 .GroupBy(item => item.Key, TypeReferenceEqualityComparer.Default)
@@ -35,9 +30,8 @@ namespace Substitute
             return typeMappings;
         }
 
-        [NotNull]
         [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute"), SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        private static IList<KeyValuePair<TypeReference, TypeDefinition>> GetTypeMappings([NotNull] this ModuleDefinition moduleDefinition)
+        private static IList<KeyValuePair<TypeReference, TypeDefinition>> GetTypeMappings(this ModuleDefinition moduleDefinition)
         {
             return moduleDefinition.Assembly.CustomAttributes
                 .Where(ca => ca.AttributeType?.FullName == "Substitute.SubstituteAttribute")
@@ -48,36 +42,37 @@ namespace Substitute
         }
 
 
-        [NotNull, ItemNotNull]
-        public static IEnumerable<TypeReference> GetBaseTypes([NotNull] this TypeReference type)
+        public static IEnumerable<TypeReference> GetBaseTypes(this TypeReference type)
         {
-            while ((type = type.Resolve()?.BaseType) != null)
+            TypeReference? item = type;
+
+            while ((item = item?.Resolve()?.BaseType) != null)
             {
-                yield return type;
+                yield return item;
             }
         }
 
-        [NotNull, ItemNotNull]
-        public static IEnumerable<TypeReference> GetSelfAndBaseTypes([NotNull] this TypeReference type)
+        public static IEnumerable<TypeReference> GetSelfAndBaseTypes(this TypeReference type)
         {
             yield return type;
 
-            while ((type = type.Resolve()?.BaseType) != null)
+            TypeReference? item = type;
+
+            while ((item = item.Resolve()?.BaseType) != null)
             {
-                yield return type;
+                yield return item;
             }
         }
 
-        [NotNull, ItemNotNull]
         [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
         [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        public static IEnumerable<TypeReference> GetAllInterfaces([NotNull] this TypeReference type)
+        public static IEnumerable<TypeReference> GetAllInterfaces(this TypeReference type)
         {
             return type.GetSelfAndBaseTypes().SelectMany(t => t.ResolveStrict().Interfaces.Select(i => i.InterfaceType));
         }
 
 
-        public static void ReplaceItems<T>([NotNull, ItemCanBeNull] this IList<T> items, [NotNull] Func<T, T> replace)
+        public static void ReplaceItems<T>(this IList<T?> items, Func<T?, T?> replace)
             where T : TypeReference
         {
             for (var i = 0; i < items.Count; i++)
@@ -86,8 +81,7 @@ namespace Substitute
             }
         }
 
-        [CanBeNull]
-        public static string GetSignature([CanBeNull] this IMemberDefinition member, [CanBeNull] TypeDefinition targetType = null)
+        public static string? GetSignature(this IMemberDefinition? member, TypeDefinition? targetType = null)
         {
             if (member == null)
                 return null;
@@ -109,8 +103,7 @@ namespace Substitute
             return value;
         }
 
-        [NotNull]
-        public static IDictionary<TypeReference, Exception> GetUnmappedTypeErrors([NotNull] this IDictionary<TypeReference, TypeDefinition> substitutionMap)
+        public static IDictionary<TypeReference, Exception> GetUnmappedTypeErrors(this IDictionary<TypeReference, TypeDefinition> substitutionMap)
         {
             var invalidTypes = new Dictionary<TypeReference, Exception>(TypeReferenceEqualityComparer.Default);
 
@@ -119,19 +112,12 @@ namespace Substitute
                 var source = entry.Key;
                 var target = entry.Value;
 
-                Contract.Assume(source != null);
-                Contract.Assume(target != null);
-
                 // TODO: interfaces implemented by base classes?
-                // ReSharper disable AssignNullToNotNullAttribute
-                // ReSharper disable PossibleNullReferenceException
                 var targetInterfaces = new HashSet<TypeReference>(target.GetAllInterfaces(), TypeReferenceEqualityComparer.Default);
                 var sourceInterfaces = source.GetAllInterfaces();
 
                 if (!sourceInterfaces.All(t => targetInterfaces.Contains(t)))
                     throw new WeavingException($@"{source} => {target} substitution error. Target must implement the same interfaces as source.", target);
-                // ReSharper restore AssignNullToNotNullAttribute
-                // ReSharper restore PossibleNullReferenceException
 
                 var targetAndBases = target.GetSelfAndBaseTypes()
                     .Select((reference, index) => new { reference, index })
@@ -139,12 +125,10 @@ namespace Substitute
 
                 var lastTargetIndex = 0;
 
-                var sourceBase = source;
+                TypeReference? sourceBase = source;
 
                 while ((sourceBase = sourceBase.Resolve()?.BaseType) != null)
                 {
-                    Contract.Assume(sourceBase != null);
-
                     if (targetAndBases.TryGetValue(sourceBase, out var index))
                     {
                         if (index <= lastTargetIndex)
@@ -173,17 +157,16 @@ Either derive {target} from {sourceBase}, or substitute {sourceBase} with {targe
             return invalidTypes;
         }
 
-        [CanBeNull]
-        public static SequencePoint TryGetSequencePoint([CanBeNull] this TypeReference type)
+        public static SequencePoint? TryGetSequencePoint(this TypeReference? type)
         {
             var definition = type?.Resolve();
 
             var method = definition?.Methods?.FirstOrDefault();
 
-            return method == null ? null : definition.Module?.SymbolReader?.Read(method)?.SequencePoints?.FirstOrDefault();
+            return method == null ? null : definition!.Module?.SymbolReader?.Read(method)?.SequencePoints?.FirstOrDefault();
         }
 
-        public static void CheckRecursions([NotNull] this IDictionary<TypeReference, TypeDefinition> substitutionMap, [NotNull, ItemNotNull] HashSet<TypeReference> substitutes)
+        public static void CheckRecursions(this IDictionary<TypeReference, TypeDefinition> substitutionMap, HashSet<TypeReference> substitutes)
         {
             var recursion = substitutionMap.Keys.FirstOrDefault(substitutes.Contains);
 
@@ -191,8 +174,7 @@ Either derive {target} from {sourceBase}, or substitute {sourceBase} with {targe
                 throw new WeavingException($"{recursion} is both source and target of a substitution.", recursion);
         }
 
-        [NotNull]
-        public static TypeDefinition ResolveStrict([NotNull] this TypeReference reference)
+        public static TypeDefinition ResolveStrict(this TypeReference reference)
         {
             return reference.Resolve() ?? throw new WeavingException($"Unable to resolve type {reference}", reference);
         }

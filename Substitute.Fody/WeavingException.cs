@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-using JetBrains.Annotations;
-
 using Mono.Cecil;
 
 namespace Substitute
@@ -13,12 +11,11 @@ namespace Substitute
     [SuppressMessage("Microsoft.Design", "CA1064:ExceptionsShouldBePublic")]
     internal class WeavingException : Exception
     {
-        public WeavingException([NotNull] string message, [CanBeNull] TypeReference type) : base(message)
+        public WeavingException(string message, TypeReference? type) : base(message)
         {
             Type = type;
         }
 
-        [CanBeNull]
-        public TypeReference Type { get; }
+        public TypeReference? Type { get; }
     }
 }

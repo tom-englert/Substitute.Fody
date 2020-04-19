@@ -4,19 +4,17 @@
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
 using System.Collections.Generic;
-using Fody;
-using JetBrains.Annotations;
 
-using Mono.Cecil.Cil;
+using FodyTools;
 
 namespace Substitute
 {
-    public class ModuleWeaver : BaseModuleWeaver, ILogger
+    public class ModuleWeaver : AbstractModuleWeaver
     {
         public override void Execute()
         {
             ModuleDefinition.Weave(this);
-            ModuleDefinition.RemoveReferences(this);
+            ModuleDefinition.RemoveReferences();
         }
 
         public override IEnumerable<string> GetAssembliesForScanning()
@@ -25,32 +23,5 @@ namespace Substitute
         }
 
         public override bool ShouldCleanReference => true;
-
-        void ILogger.LogDebug([NotNull] string message)
-        {
-            LogDebug(message);
-        }
-
-        void ILogger.LogInfo([NotNull] string message)
-        {
-            LogInfo(message);
-        }
-
-        void ILogger.LogWarning([NotNull] string message)
-        {
-            LogWarning(message);
-        }
-
-        void ILogger.LogError([NotNull] string message, [CanBeNull] SequencePoint sequencePoint)
-        {
-            if (sequencePoint != null)
-            {
-                LogErrorPoint(message, sequencePoint);
-            }
-            else
-            {
-                LogError(message);
-            }
-        }
     }
 }

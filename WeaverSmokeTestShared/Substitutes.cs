@@ -1,4 +1,6 @@
-﻿using System;
+﻿// ReSharper disable all
+
+using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
@@ -8,6 +10,7 @@ namespace WeaverSmokeTestCS
 {
     public class MyComponentResourceManager : ComponentResourceManager
     {
+#pragma warning disable IDE0060 // Remove unused parameter
         public MyComponentResourceManager(Type t)
         {
         }

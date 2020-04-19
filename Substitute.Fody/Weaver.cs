@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-using JetBrains.Annotations;
+using FodyTools;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -11,7 +12,7 @@ namespace Substitute
 {
     internal static class WeaverExtensions
     {
-        internal static void Weave([NotNull] this ModuleDefinition moduleDefinition, [NotNull] ILogger logger)
+        internal static void Weave(this ModuleDefinition moduleDefinition, ILogger logger)
         {
             try
             {
@@ -25,18 +26,13 @@ namespace Substitute
 
         private class Weaver
         {
-            [NotNull]
             private readonly ModuleDefinition _moduleDefinition;
-            [NotNull, ItemNotNull]
             private readonly HashSet<TypeReference> _validatedTypes = new HashSet<TypeReference>(TypeReferenceEqualityComparer.Default);
-            [NotNull]
             private readonly IDictionary<TypeReference, TypeDefinition> _substitutionMap;
-            [NotNull, ItemNotNull]
             private readonly HashSet<TypeReference> _substitutes;
-            [NotNull]
             private readonly IDictionary<TypeReference, Exception> _unmappedTypeErrors;
 
-            public Weaver([NotNull] ModuleDefinition moduleDefinition)
+            public Weaver(ModuleDefinition moduleDefinition)
             {
                 _moduleDefinition = moduleDefinition;
                 _substitutionMap = moduleDefinition.CreateSubstitutionMap();
@@ -125,8 +121,7 @@ namespace Substitute
                 }
             }
 
-            [NotNull]
-            private TypeReference GetSubstitute([NotNull] TypeReference type)
+            private TypeReference GetSubstitute(TypeReference type)
             {
                 if (_substitutionMap.TryGetValue(type, out var substitute))
                 {
@@ -135,7 +130,7 @@ namespace Substitute
 
                 if (type is GenericInstanceType genericType)
                 {
-                    genericType.GenericArguments.ReplaceItems(GetSubstitute);
+                    genericType.GenericArguments.ReplaceItems(GetSubstitute!);
                 }
 
                 foreach (var genericParameter in type.GenericParameters)
@@ -160,8 +155,7 @@ namespace Substitute
                 return type;
             }
 
-            [ContractAnnotation("substitute:null => false")]
-            private bool TryGetSubstitute([NotNull] TypeReference type, [CanBeNull] out TypeDefinition substitute)
+            private bool TryGetSubstitute(TypeReference type, [NotNullWhen(true)] out TypeDefinition? substitute)
             {
                 var t = GetSubstitute(type);
                 substitute = null;
@@ -174,8 +168,7 @@ namespace Substitute
                 return substitute != null;
             }
 
-            [NotNull]
-            private MethodReference Find([NotNull] TypeDefinition type, [NotNull] MethodDefinition template)
+            private MethodReference Find(TypeDefinition type, MethodDefinition template)
             {
                 var signature = template.GetSignature(type);
 
@@ -194,8 +187,7 @@ namespace Substitute
                 return _moduleDefinition.ImportReference(newItem);
             }
 
-            [NotNull]
-            private FieldReference Find([NotNull] TypeDefinition type, [NotNull] FieldDefinition template)
+            private FieldReference Find(TypeDefinition type, FieldDefinition template)
             {
                 var signature = template.GetSignature(type);
 
