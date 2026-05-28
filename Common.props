@@ -11,6 +11,10 @@
     <LangVersion>latest</LangVersion>
     <PackageOutputPath>$(SolutionDir)nugets</PackageOutputPath>
     <Nullable>enable</Nullable>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,24 +29,6 @@
     <PackageIcon>$(PackageIconFileName)</PackageIcon>
     <PackageLicenseFile>$(PackageLicenseFileName)</PackageLicenseFile>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net40-client'">
-    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>client</TargetFrameworkProfile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'portable40-net40+sl5+win8+wp8+wpa81'">
-    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Profile328</TargetFrameworkProfile>
-    <DefineConstants>$(DefineConstants);PORTABLE</DefineConstants>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'portable40-net40+sl5+win8+wp8+wpa81'">
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-  </ItemGroup>
 
   <ItemGroup>
     <TfmSpecificPackageFile Include="build\*.targets" PackagePath="build" />

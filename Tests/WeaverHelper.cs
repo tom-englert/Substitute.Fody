@@ -1,12 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Fody;
+using Substitute;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
-using Fody;
-
-using Substitute;
-
-using TomsToolbox.Core;
+using TomsToolbox.Essentials;
 
 namespace Tests
 {
